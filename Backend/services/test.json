@@ -1,0 +1,110 @@
+{
+  "results": [
+    {
+      "address_components": [
+        {
+          "long_name": "Dharmapuri",
+          "short_name": "Dharmapuri",
+          "types": [
+            "neighborhood",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Forest Colony",
+          "short_name": "Forest Colony",
+          "types": [
+            "political",
+            "sublocality",
+            "sublocality_level_2"
+          ]
+        },
+        {
+          "long_name": "Tajganj",
+          "short_name": "Tajganj",
+          "types": [
+            "political",
+            "sublocality",
+            "sublocality_level_1"
+          ]
+        },
+        {
+          "long_name": "Agra",
+          "short_name": "Agra",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Agra",
+          "short_name": "Agra",
+          "types": [
+            "administrative_area_level_3",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Agra Division",
+          "short_name": "Agra Division",
+          "types": [
+            "administrative_area_level_2",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Uttar Pradesh",
+          "short_name": "UP",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "India",
+          "short_name": "IN",
+          "types": [
+            "country",
+            "political"
+          ]
+        },
+        {
+          "long_name": "282001",
+          "short_name": "282001",
+          "types": [
+            "postal_code"
+          ]
+        }
+      ],
+      "formatted_address": "Dharmapuri, Forest Colony, Tajganj, Agra, Uttar Pradesh 282001, India",
+      "geometry": {
+        "location": {
+          "lat": 27.1751448,
+          "lng": 78.0421422
+        },
+        "location_type": "GEOMETRIC_CENTER",
+        "viewport": {
+          "northeast": {
+            "lat": 27.1751448,
+            "lng": 78.0529904
+          },
+          "southwest": {
+            "lat": 27.1663169,
+            "lng": 78.0337248
+          }
+        }
+      },
+      "place_id": "ChIJbf8C1yFxdDkR3n12P4DkKt0",
+      "plus_code": {
+        "compound_code": "52GR+3V Agra, Uttar Pradesh, India",
+        "global_code": "7JVW52GR+3V"
+      },
+      "types": [
+        "establishment",
+        "point_of_interest",
+        "tourist_attraction"
+      ]
+    }
+  ],
+  "status": "OK"
+}
