@@ -1,15 +1,20 @@
 const mongoose = require('mongoose');
 
 const rideSchema = new mongoose.Schema({
-    origin: {
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
+    },
+    captain: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Driver'
+    },
+    pickup: {
         type: String,
         required: true 
     },
     destination: {
-        type: String,
-        required: true
-    },
-    vehicleType: {
         type: String,
         required: true
     },
@@ -23,15 +28,6 @@ const rideSchema = new mongoose.Schema({
         enum: ['pending', 'accepted', 'on_way', 'completed', 'cancelled'],
         default: 'pending'
     },
-    user: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: true
-    },
-    driver: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Driver'
-    },
     distance: {
         type: Number,
         required: true,
@@ -42,6 +38,17 @@ const rideSchema = new mongoose.Schema({
         required: true,
         min: 0
     },
-
-    
+    paymentId: {
+        type: String
+    },
+    orderId: {
+        type: String
+    },
+    otp: {
+        type: String,
+        select: false,
+        required: true
+    }
 })
+
+module.exports = mongoose.model('ride', rideSchema);
