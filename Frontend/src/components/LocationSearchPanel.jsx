@@ -1,14 +1,7 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import gsap from "gsap";
 
-const sampleAddresses = [
-  "24B, Near Kapoor's cafe, Sheryians Coding School, Bhopal",
-  "22C, Near Malholtra's cafe, Sheryians Coding School, Bhopal",
-  "20B, Near Singhai's cafe, Sheryians Coding School, Bhopal",
-  "18A, Near Sharma's cafe, Sheryians Coding School, Bhopal",
-];
-
-export default function LocationSearchPanel({ onSelectAddress }) {
+export default function LocationSearchPanel(params) {
   const listRef = useRef(null);
 
   // Fade + slide the list in each time the panel becomes visible
@@ -21,13 +14,21 @@ export default function LocationSearchPanel({ onSelectAddress }) {
     );
   }, []);
 
+  const handleSelectAddress = (address) => {
+    if(params.activeField === "pickup") {
+      params.setPickup(address);
+    } else if(params.activeField === "destination") {
+      params.setDestination(address);
+    }
+  };
+
   return (
     <div ref={listRef} className="mt-4 flex flex-col divide-y divide-gray-100 overflow-y-auto">
-      {sampleAddresses.map((address, i) => (
+      {params.suggestions.map((address, i) => (
         <button
           key={i}
           type="button"
-          onClick={() => onSelectAddress(address)}
+          onClick={()=> {handleSelectAddress(address.description)}}
           className="flex items-start gap-3 py-3 text-left active:bg-gray-50"
         >
           <svg
@@ -44,7 +45,7 @@ export default function LocationSearchPanel({ onSelectAddress }) {
             />
             <circle cx="12" cy="10" r="2.2" stroke="currentColor" strokeWidth="1.6" />
           </svg>
-          <span className="text-sm text-gray-900 leading-snug">{address}</span>
+          <span className="text-sm text-gray-900 leading-snug">{address.description}</span>
         </button>
       ))}
     </div>

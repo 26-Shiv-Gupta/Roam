@@ -5,10 +5,14 @@ import VechilePanel from "../components/VechilePanel";
 import ConfirmRide from "../components/ConfirmRide";
 import LookingForRide from "../components/LookingForRide";
 import WaitingForDriver from "../components/WaitingForDriver";
+import axios from "axios";
 
 export default function Home() {
+  const [activeField, setActiveField] = useState(null);
   const [pickup, setPickup] = useState("");
+  const [pickupSuggestions, setPickupSuggestions] = useState([]);
   const [destination, setDestination] = useState("");
+  const [destinationSuggestions, setDestinationSuggestions] = useState([]);
   const [panelOpen, setPanelOpen] = useState(false);
   const [vehiclePanelOpen, setVehiclePanelOpen] = useState(false);
   const [confirmRidePanelOpen, setConfirmRidePanelOpen] = useState(false);
@@ -82,10 +86,51 @@ export default function Home() {
     });
   }, [waitingForDriver]);
 
-  const handleSelectAddress = (address) => {
-    setDestination(address);
-    setPanelOpen(false);
-    setVehiclePanelOpen(true);
+  const handlePickupChange = async (e) => {
+    setPickup(e.target.value);
+
+    try {
+      if (e.target.value.length < 3) {
+        setPickupSuggestions([]);
+        return;
+      }
+      const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/maps/get-suggestions`, {
+        params: { address: e.target.value },
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`
+        }
+      });
+      setPickupSuggestions(response.data);
+    } catch (error) {
+      console.error("Error fetching pickup suggestions:", error);
+    }
+  };
+
+  const handleDestinationChange = async (e) => {
+    setDestination(e.target.value);
+
+    try {
+      if (e.target.value.length < 3) {
+        setDestinationSuggestions([]);
+        return;
+      }
+      const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/maps/get-suggestions`, {
+        params: { address: e.target.value },
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`
+        }
+      });
+      setDestinationSuggestions(response.data);
+    } catch (error) {
+      console.error("Error fetching destination suggestions:", error);
+    }
+  }
+
+  const handleFindRide = () => {
+    if (pickup && destination) {
+      setPanelOpen(false);
+      setVehiclePanelOpen(true);
+    }
   };
 
   return (
@@ -150,22 +195,35 @@ export default function Home() {
             type="text"
             placeholder="Add a pick-up location"
             value={pickup}
+            onClick={() => setActiveField("pickup")}
             onFocus={() => setPanelOpen(true)}
-            onChange={(e) => setPickup(e.target.value)}
+            onChange={handlePickupChange}
             className="w-full rounded-md bg-neutral-100 pl-8 pr-3 py-3 text-base text-gray-900 placeholder-gray-400 outline-none mb-3"
           />
           <input
             type="text"
             placeholder="Enter your destination"
             value={destination}
+            onClick={() => setActiveField("destination")}
             onFocus={() => setPanelOpen(true)}
-            onChange={(e) => setDestination(e.target.value)}
+            onChange={handleDestinationChange}
             className="w-full rounded-md border border-transparent bg-neutral-100 pl-8 pr-3 py-3 text-base text-gray-900 placeholder-gray-400 outline-none"
           />
         </div>
 
+        <button
+          onClick={handleFindRide} 
+          className="mt-4 w-full rounded-md bg-green-600 py-3 text-base font-bold text-white active:opacity-80 transition-opacity">
+          Find ride
+        </button>
+
         {panelOpen && (
-          <LocationSearchPanel onSelectAddress={handleSelectAddress} />
+          <LocationSearchPanel
+            suggestions={activeField === "pickup" ? pickupSuggestions : destinationSuggestions}
+            activeField={activeField}
+            setPickup={setPickup}
+            setDestination={setDestination}
+          />
         )}
       </div>
 
@@ -179,7 +237,7 @@ export default function Home() {
 
       {/* Confirm Ride panel */}
       <div
-        ref={confirmRidePanelRef} 
+        ref={confirmRidePanelRef}
         className="absolute bottom-0 w-full"
       >
         <ConfirmRide setConfirmRidePanelOpen={setConfirmRidePanelOpen} setVechileFound={setVechileFound} />
@@ -187,15 +245,15 @@ export default function Home() {
 
       {/* Confirm Ride panel */}
       <div
-        ref={vechileFoundRef} 
+        ref={vechileFoundRef}
         className="absolute bottom-0 w-full"
       >
-        <LookingForRide setVechileFound={setVechileFound}/>
+        <LookingForRide setVechileFound={setVechileFound} />
       </div>
 
       {/* Waiting for ride panel */}
       <div
-        ref={waitingForDriverRef} 
+        ref={waitingForDriverRef}
         className="absolute bottom-0 w-full"
       >
         <WaitingForDriver setWaitingForDriver={setWaitingForDriver} />
