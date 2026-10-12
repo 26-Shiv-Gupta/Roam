@@ -5,29 +5,38 @@ import axios from 'axios';
 
 const UserProtectWrapper = ({ children }) => {
 
-    const {user, setUser} = useContext(UserDataContext);
-    const token = localStorage.getItem('token');
+    const { user, setUser } = useContext(UserDataContext);
     const navigate = useNavigate();
 
     useEffect(() => {
-        if (!token) {
-            navigate('/user-login')
-        }
-    })
+        const token = localStorage.getItem('token')
 
-    axios.get(`${import.meta.env.VITE_BASE_URL}/users/profile`, {
-        headers: {
-            Authorization: `Bearer ${token}`
+        if (!token) {
+            navigate('/user-login', { replace: true })
+            return
         }
-    }).then((response) => {
-        if (response.status === 200) {
-            setUser(response.data.user);
+
+        const fetchUser = async () => {
+            try {
+                const response = await axios.get(
+                    `${import.meta.env.VITE_BASE_URL}/users/profile`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`
+                        }
+                    }
+                )
+
+                setUser(response.data)
+            } catch (err) {
+                console.error(err)
+                localStorage.removeItem('token')
+                navigate('/user-login', { replace: true })
+            }
         }
-    }).catch((err) => {
-        console.log(err);
-        localStorage.removeItem('token');
-        navigate('/user-login');
-    })
+
+        fetchUser()
+    }, [navigate, setUser])
 
     return (
         <>
