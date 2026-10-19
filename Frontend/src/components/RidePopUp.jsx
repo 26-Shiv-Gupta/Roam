@@ -1,18 +1,7 @@
 import React, { useRef, useEffect } from "react";
 import gsap from "gsap";
 
-export default function RidePopUp({
-  riderName = "Harsh Patel",
-  riderAvatar = "https://images.unsplash.com/photo-1633332755192-727a05c4013d?auto=format&fit=crop&w=200&q=80",
-  distance = "2.2 KM",
-  pickup = "562/11-A, Kankariya Talab, Bhopal",
-  destination = "562/11-A, Kankariya Talab, Bhopal",
-  price = "193.20",
-  onConfirm,
-  onIgnore,
-  setRidePopUpPanel,
-  setConfirmRidePopUpPanel
-}) {
+export default function RidePopUp(props) {
   const panelRef = useRef(null);
 
   useEffect(() => {
@@ -31,7 +20,7 @@ export default function RidePopUp({
         className="w-full max-w-md rounded-t-2xl sm:rounded-2xl px-5 pt-3 pb-6 shadow-[0_-4px_16px_rgba(0,0,0,0.08)]"
       >
         {/* Drag handle */}
-        <div onClick={()=>{setRidePopUpPanel(false)}} className="mx-auto mb-4 h-1.5 w-10 rounded-full bg-gray-300" />
+        <div onClick={() => { props.setRidePopUpPanel(false) }} className="mx-auto mb-4 h-1.5 w-10 rounded-full bg-gray-300" />
 
         <h2 className="text-xl font-bold text-gray-900 mb-4">
           New Ride Available!
@@ -41,13 +30,13 @@ export default function RidePopUp({
         <div className="flex items-center justify-between rounded-xl bg-amber-400 px-4 py-3 mb-4">
           <div className="flex items-center gap-3">
             <img
-              src={riderAvatar}
-              alt={riderName}
+              src="https://images.unsplash.com/photo-1633332755192-727a05c4013d?auto=format&fit=crop&w=200&q=80"
+              alt="profile pic"
               className="h-10 w-10 rounded-full object-cover"
             />
-            <p className="font-semibold text-gray-900">{riderName}</p>
+            <p className="font-semibold text-gray-900">{props.ride?.user.fullname.firstname + " " + props.ride?.user.fullname.lastname}</p>
           </div>
-          <p className="font-semibold text-gray-900">{distance}</p>
+          <p className="font-semibold text-gray-900">880 Km</p>
         </div>
 
         {/* Pickup */}
@@ -62,10 +51,7 @@ export default function RidePopUp({
           </svg>
           <div>
             <p className="font-semibold text-gray-900">
-              {pickup.split(",")[0]}
-            </p>
-            <p className="text-sm text-gray-500">
-              {pickup.split(",").slice(1).join(",").trim()}
+              {props.ride?.pickup}
             </p>
           </div>
         </div>
@@ -78,10 +64,7 @@ export default function RidePopUp({
           </svg>
           <div>
             <p className="font-semibold text-gray-900">
-              {destination.split(",")[0]}
-            </p>
-            <p className="text-sm text-gray-500">
-              {destination.split(",").slice(1).join(",").trim()}
+              {props.ride?.destination}
             </p>
           </div>
         </div>
@@ -93,24 +76,24 @@ export default function RidePopUp({
             <path d="M3 10h18" stroke="#111827" strokeWidth="1.6" />
           </svg>
           <div>
-            <p className="font-semibold text-gray-900">₹{price}</p>
-            <p className="text-sm text-gray-500">Cash Cash</p>
+            <p className="font-semibold text-gray-900">₹{props.ride?.fare}</p>
+            <p className="text-sm text-gray-500">Cash</p>
           </div>
         </div>
 
         <button
           type="button"
           onClick={() => {
-            setConfirmRidePopUpPanel(true)
-            setRidePopUpPanel(false)
-        }}
+            props.setRidePopUpPanel(false)
+            props.confirmRide()
+          }}
           className="mt-5 w-full rounded-md bg-green-600 py-3.5 text-base font-bold text-white active:opacity-80 transition-opacity"
         >
           Accept
         </button>
         <button
           type="button"
-          onClick={()=>{setRidePopUpPanel(false)}}
+          onClick={() => { props.setRidePopUpPanel(false) }}
           className="mt-3 w-full rounded-md bg-gray-200 py-3.5 text-base font-bold text-gray-800 active:opacity-80 transition-opacity"
         >
           Ignore

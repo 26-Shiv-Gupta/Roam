@@ -1,8 +1,12 @@
 import React, { useRef, useEffect } from "react";
 import gsap from "gsap";
+import axios from 'axios';
+import { UserDataContext } from "../context/UserContext";
+import { useContext } from "react";
 
 export default function ConfirmRide(props) {
     const panelRef = useRef(null);
+    const {user} = useContext(UserDataContext);
 
     // Slide the confirm sheet up on mount, same feel as the vehicle panel
     useEffect(() => {
@@ -13,6 +17,27 @@ export default function ConfirmRide(props) {
             { y: 0, opacity: 1, duration: 0.4, ease: "power3.out" }
         );
     }, []);
+
+    const handleConfirmRide = async () => {
+        props.setVechileFound(true);
+        props.setConfirmRidePanelOpen(false);
+
+        const newRide = {
+            pickup: props.pickup,
+            destination: props.destination,
+            vehicleType: props.selectedVehicle,
+        }
+
+        const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/rides/create-ride`, newRide, 
+            {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`
+                }
+            }
+        );
+
+        // console.log(response.data);
+    }
 
     return (
         <div className="bg-white rounded-t-2xl shadow-[0_-4px_16px_rgba(0,0,0,0.08)] px-5 pt-3 pb-10 max-w-md mx-auto">
@@ -62,10 +87,7 @@ export default function ConfirmRide(props) {
                 </svg>
                 <div>
                     <p className="font-semibold text-gray-900">
-                        abcd/12
-                    </p>
-                    <p className="text-sm text-gray-500">
-                        bhopal
+                        {props.pickup}
                     </p>
                 </div>
             </div>
@@ -78,10 +100,7 @@ export default function ConfirmRide(props) {
                 </svg>
                 <div>
                     <p className="font-semibold text-gray-900">
-                        xyz/1234
-                    </p>
-                    <p className="text-sm text-gray-500">
-                        sskdjf
+                        {props.destination}
                     </p>
                 </div>
             </div>
@@ -93,17 +112,14 @@ export default function ConfirmRide(props) {
                     <path d="M3 10h18" stroke="#111827" strokeWidth="1.6" />
                 </svg>
                 <div>
-                    <p className="font-semibold text-gray-900">₹392.3</p>
-                    <p className="text-sm text-gray-500">Cash Cash</p>
+                    <p className="font-semibold text-gray-900">₹{props.fare[props.selectedVehicle]}</p>
+                    <p className="text-sm text-gray-500">Cash</p>
                 </div>
             </div>
 
             <button
                 type="button"
-                onClick={()=> {
-                    props.setVechileFound(true)
-                    props.setConfirmRidePanelOpen(false)
-                }}
+                onClick={handleConfirmRide}
                 className="mt-6 w-full rounded-md bg-green-600 py-3.5 text-base font-bold text-white active:opacity-80 transition-opacity"
             >
                 Confirm

@@ -2,6 +2,11 @@ import React, { useRef, useState, useEffect } from 'react'
 import RidePopUp from '../components/RidePopUp';
 import gsap from "gsap";
 import ConfirmRidePopUp from '../components/ConfirmRidePopUp';
+import { SocketContext } from '../context/SocketContext';
+import { useContext } from 'react';
+import { CaptainDataContext } from '../context/CaptainContext';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const stats = [
   {
@@ -55,15 +60,46 @@ const CaptainHome = ({
   captainName = "Harsh Patel",
   captainAvatar = "https://images.unsplash.com/photo-1633332755192-727a05c4013d?auto=format&fit=crop&w=200&q=80",
   earnings = "295.20",
-  arrivalMinutes = 6,
-  onLogout,
 }) => {
 
-  const [RidePopUpPanel, setRidePopUpPanel] = useState(true)
+  const [RidePopUpPanel, setRidePopUpPanel] = useState(false)
   const [confirmRidePopUpPanel, setConfirmRidePopUpPanel] = useState(false)
+  const [ride, setRide] = useState(null)
 
   const RidePopUpRef = useRef(null)
   const ConfirmRidePopUpRef = useRef(null)
+
+  const { socket } = useContext(SocketContext);
+  const { captain } = useContext(CaptainDataContext);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    socket.emit("join", { userType: 'captain', userId: captain._id });
+  }, [socket, captain._id]);
+
+  useEffect(() => {
+    const updateLocation = () => {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(position => {
+          socket.emit('update-location-captain', {
+            userId: captain._id,
+            location: {
+              ltd: position.coords.latitude,
+              lng: position.coords.longitude
+            }
+          })
+        })
+      }
+    }
+
+    setInterval(updateLocation, 10000);
+    updateLocation();
+  }, [])
+
+  socket.on('new-ride', (data) => {
+    setRide(data);
+    setRidePopUpPanel(true);
+  })
 
   // Confirm Ride popup slides up from the bottom over everything else
   useEffect(() => {
@@ -84,6 +120,20 @@ const CaptainHome = ({
       ease: "power3.out",
     });
   }, [RidePopUpPanel]);
+
+  const confirmRide = async () => {
+
+    const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/rides/confirm-ride`, {
+      rideId: ride._id,
+      captainId: captain._id
+    }, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`
+      }
+    })
+
+    setConfirmRidePopUpPanel(true);
+  }
 
   return (
     <div className="relative w-full h-screen bg-neutral-100 overflow-hidden">
@@ -124,6 +174,7 @@ const CaptainHome = ({
         {/* Logout Button */}
         <button
           type="button"
+          onClick={() => navigate('/captain-logout')}
           aria-label="Logout"
           className="absolute top-5 right-5 flex h-9 w-9 items-center justify-center rounded-full bg-white shadow"
         >
@@ -175,7 +226,11 @@ const CaptainHome = ({
         ref={RidePopUpRef}
         className="absolute bottom-0 w-full"
       >
-        <RidePopUp setRidePopUpPanel={setRidePopUpPanel} setConfirmRidePopUpPanel={setConfirmRidePopUpPanel}/>
+        <RidePopUp
+          ride={ride}
+          setRidePopUpPanel={setRidePopUpPanel}
+          confirmRide={confirmRide}
+          setConfirmRidePopUpPanel={setConfirmRidePopUpPanel} />
       </div>
 
       {/* Confirm Ride popup Panel */}
@@ -183,7 +238,11 @@ const CaptainHome = ({
         ref={ConfirmRidePopUpRef}
         className="absolute bottom-0 w-full h-screen bg-white"
       >
-        <ConfirmRidePopUp setConfirmRidePopUpPanel={setConfirmRidePopUpPanel}/>
+        <ConfirmRidePopUp
+          ride={ride}
+          captainId={captain._id}
+          setConfirmRidePopUpPanel={setConfirmRidePopUpPanel}
+        />
       </div>
 
     </div>

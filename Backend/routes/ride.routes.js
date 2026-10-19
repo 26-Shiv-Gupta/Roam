@@ -8,7 +8,6 @@ router.post('/create-ride',
     body('pickup').isString().isLength({min: 3}),
     body('destination').isString().isLength({min: 3}),
     body('vehicleType').isString().isLength({min: 3}),
-    body('fare').isFloat({min: 0}),
     authMiddleware.authUser,
     rideController.createRide
 )
@@ -18,6 +17,21 @@ router.get('/get-fare',
     query('destination').isString().isLength({min: 3}),
     authMiddleware.authUser,
     rideController.getFare
+)
+
+router.post('/confirm-ride', 
+    authMiddleware.authCaptain,
+    body('rideId').isMongoId().withMessage('Invalid ride id'),
+    body('captainId').isMongoId().withMessage('Invalid captain id'),
+    rideController.confirmRide
+)
+
+router.post('/start-ride', 
+    authMiddleware.authCaptain,
+    body('rideId').isMongoId().withMessage('Invalid ride id'),
+    body('otp').isLength({min: 4, max: 4}).withMessage('Invalid otp'),
+    body('captainId').isMongoId().withMessage('Invalid captain id'),
+    rideController.startRide
 )
 
 module.exports = router;

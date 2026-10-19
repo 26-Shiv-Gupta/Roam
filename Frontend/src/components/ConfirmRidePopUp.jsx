@@ -1,18 +1,9 @@
 import React, { useRef, useEffect, useState } from "react";
 import gsap from "gsap";
 import { Link, useNavigate } from "react-router-dom"
+import axios from "axios";
 
-export default function ConfirmRidePopUp({
-  riderName = "Harshi Pateliya",
-  riderAvatar = "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80",
-  distance = "2.2 KM",
-  pickup = "562/11-A, Kankariya Talab, Bhopal",
-  destination = "562/11-A, Kankariya Talab, Bhopal",
-  price = "193.20",
-  onConfirm,
-  onCancel,
-  setConfirmRidePopUpPanel
-}) {
+export default function ConfirmRidePopUp(props) {
   const panelRef = useRef(null);
   const navigate = useNavigate();
 
@@ -27,10 +18,17 @@ export default function ConfirmRidePopUp({
     );
   }, []);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    navigate('/captain-riding')
-    console.log("hello submit")
+    const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/rides/start-ride`, {
+      rideId: props.ride?._id,
+      otp,
+      captainId: props.captainId
+    }, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`
+      }
+    })
   }
 
   return (
@@ -41,7 +39,7 @@ export default function ConfirmRidePopUp({
       >
         {/* Drag handle */}
         <div onClick={() => {
-          setConfirmRidePopUpPanel(false)
+          props.setConfirmRidePopUpPanel(false)
         }} className="mx-auto mb-4 h-1.5 w-10 rounded-full bg-gray-300" />
 
         <h2 className="text-xl font-bold text-gray-900 mb-4">
@@ -52,13 +50,13 @@ export default function ConfirmRidePopUp({
         <div className="flex items-center justify-between rounded-xl bg-amber-400 px-4 py-3 mb-4">
           <div className="flex items-center gap-3">
             <img
-              src={riderAvatar}
-              alt={riderName}
+              src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80"
+              alt="profile pic"
               className="h-10 w-10 rounded-full object-cover"
             />
-            <p className="font-semibold text-gray-900">{riderName}</p>
+            <p className="font-semibold text-gray-900">{props.ride?.user.fullname.firstname + " " + props.ride?.user.fullname.lastname}</p>
           </div>
-          <p className="font-semibold text-gray-900">{distance}</p>
+          <p className="font-semibold text-gray-900">455 Km</p>
         </div>
 
         {/* Pickup */}
@@ -73,10 +71,7 @@ export default function ConfirmRidePopUp({
           </svg>
           <div>
             <p className="font-semibold text-gray-900">
-              {pickup.split(",")[0]}
-            </p>
-            <p className="text-sm text-gray-500">
-              {pickup.split(",").slice(1).join(",").trim()}
+              {props.ride?.pickup}
             </p>
           </div>
         </div>
@@ -89,10 +84,7 @@ export default function ConfirmRidePopUp({
           </svg>
           <div>
             <p className="font-semibold text-gray-900">
-              {destination.split(",")[0]}
-            </p>
-            <p className="text-sm text-gray-500">
-              {destination.split(",").slice(1).join(",").trim()}
+              {props.ride?.destination}
             </p>
           </div>
         </div>
@@ -104,8 +96,8 @@ export default function ConfirmRidePopUp({
             <path d="M3 10h18" stroke="#111827" strokeWidth="1.6" />
           </svg>
           <div>
-            <p className="font-semibold text-gray-900">₹{price}</p>
-            <p className="text-sm text-gray-500">Cash Cash</p>
+            <p className="font-semibold text-gray-900">₹{props.ride?.fare}</p>
+            <p className="text-sm text-gray-500">Cash</p>
           </div>
         </div>
 
@@ -127,7 +119,7 @@ export default function ConfirmRidePopUp({
           <button
             type="button"
             onClick={() => {
-              setConfirmRidePopUpPanel(false)
+              props.setConfirmRidePopUpPanel(false)
             }}
             className="mt-3 w-full rounded-md bg-red-600 py-3.5 text-base font-bold text-white active:opacity-80 transition-opacity"
           >

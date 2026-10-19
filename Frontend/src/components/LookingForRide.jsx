@@ -60,10 +60,7 @@ const LookingForRide = (props) => {
                 </svg>
                 <div>
                     <p className="font-semibold text-gray-900">
-                        abcd/12
-                    </p>
-                    <p className="text-sm text-gray-500">
-                        bhopal
+                        {props.pickup}
                     </p>
                 </div>
             </div>
@@ -76,10 +73,7 @@ const LookingForRide = (props) => {
                 </svg>
                 <div>
                     <p className="font-semibold text-gray-900">
-                        xyz/1234
-                    </p>
-                    <p className="text-sm text-gray-500">
-                        sskdjf
+                        {props.destination}
                     </p>
                 </div>
             </div>
@@ -91,8 +85,8 @@ const LookingForRide = (props) => {
                     <path d="M3 10h18" stroke="#111827" strokeWidth="1.6" />
                 </svg>
                 <div>
-                    <p className="font-semibold text-gray-900">₹392.3</p>
-                    <p className="text-sm text-gray-500">Cash Cash</p>
+                    <p className="font-semibold text-gray-900">₹{props.fare[props.selectedVehicle]}</p>
+                    <p className="text-sm text-gray-500">Cash</p>
                 </div>
             </div>
         </div>

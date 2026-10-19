@@ -20,12 +20,12 @@ export default function WaitingForDriver(props) {
         className="w-full max-w-md min-h-screen bg-white flex flex-col px-5 pt-3 pb-6"
       >
         {/* Collapse handle */}
-            <button
-                type="button"
-                onClick={() => { props.setWaitingForDriver(false) }}
-                aria-label="Close vehicle panel"
-                className="mx-auto mb-3 block h-1.5 w-10 rounded-full bg-gray-300"
-            />
+        <button
+          type="button"
+          onClick={() => { props.setWaitingForDriver(false) }}
+          aria-label="Close vehicle panel"
+          className="mx-auto mb-3 block h-1.5 w-10 rounded-full bg-gray-300"
+        />
 
         {/* Driver + vehicle */}
         <div className="flex items-center justify-between mt-2 mb-6">
@@ -49,11 +49,12 @@ export default function WaitingForDriver(props) {
           </svg>
 
           <div className="text-right">
-            <p className="text-lg font-bold text-gray-900">shiv gupta</p>
+            <p className="text-lg font-bold text-gray-900">{props.ride?.captain.fullname.firstname + " " + props.ride?.captain.fullname.lastname}</p>
             <p className="text-lg font-extrabold tracking-wide text-gray-900">
-              ACDB1234
+              {props.ride?.captain.vechile.plate}
             </p>
-            <p className="text-sm text-gray-500">maruti suzuki alto</p>
+            <p className="text-sm text-gray-500">{props.ride?.captain.vechile.vechileType}</p>
+            <p className="text-sm text-gray-500">OTP: {props.ride?.otp}</p>
           </div>
         </div>
 
@@ -69,10 +70,7 @@ export default function WaitingForDriver(props) {
           </svg>
           <div>
             <p className="font-semibold text-gray-900">
-              asdgsgdaga
-            </p>
-            <p className="text-sm text-gray-500">
-              agasgdasgfasdfasfa
+              {props.ride?.pickup}
             </p>
           </div>
         </div>
@@ -85,10 +83,7 @@ export default function WaitingForDriver(props) {
           </svg>
           <div>
             <p className="font-semibold text-gray-900">
-              sdffsfsfsf
-            </p>
-            <p className="text-sm text-gray-500">
-              asgdasgasgasdg
+              {props.ride?.destination}
             </p>
           </div>
         </div>
@@ -100,8 +95,8 @@ export default function WaitingForDriver(props) {
             <path d="M3 10h18" stroke="#111827" strokeWidth="1.6" />
           </svg>
           <div>
-            <p className="font-semibold text-gray-900">₹936</p>
-            <p className="text-sm text-gray-500">Cash Cash</p>
+            <p className="font-semibold text-gray-900">₹{props.ride?.fare}</p>
+            <p className="text-sm text-gray-500">Cash</p>
           </div>
         </div>
       </div>

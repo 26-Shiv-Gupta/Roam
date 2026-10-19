@@ -6,6 +6,9 @@ import ConfirmRide from "../components/ConfirmRide";
 import LookingForRide from "../components/LookingForRide";
 import WaitingForDriver from "../components/WaitingForDriver";
 import axios from "axios";
+import { SocketContext } from "../context/SocketContext";
+import { UserDataContext } from "../context/UserContext";
+import { useContext } from "react";
 
 export default function Home() {
   const [activeField, setActiveField] = useState(null);
@@ -16,8 +19,11 @@ export default function Home() {
   const [panelOpen, setPanelOpen] = useState(false);
   const [vehiclePanelOpen, setVehiclePanelOpen] = useState(false);
   const [confirmRidePanelOpen, setConfirmRidePanelOpen] = useState(false);
+  const [fare, setFare] = useState(0);
   const [vechileFound, setVechileFound] = useState(false)
   const [waitingForDriver, setWaitingForDriver] = useState(false)
+  const [selectedVehicle, setSelectedVehicle] = useState(null);
+  const [ride, setRide] = useState(null)
 
   const mapRef = useRef(null);
   const panelRef = useRef(null);
@@ -26,6 +32,22 @@ export default function Home() {
   const vechileFoundRef = useRef(null);
   const waitingForDriverRef = useRef(null);
 
+  const { user } = useContext(UserDataContext);
+  const { socket } = useContext(SocketContext);
+
+  useEffect(() => {
+    socket.emit('join', { userType: 'user', userId: user._id });
+  }, [user]);
+
+  socket.on('ride-confirmed', (data) => {
+    setWaitingForDriver(true)
+    setVechileFound(false)
+    setRide(data);
+  })
+
+  socket.on('ride-started', (ride) => {
+    console.log('ride-started')
+  })
   // Map shrinks / Find-a-trip panel grows when the user starts searching
   useEffect(() => {
     if (panelOpen) {
@@ -126,10 +148,19 @@ export default function Home() {
     }
   }
 
-  const handleFindRide = () => {
+  const handleFindRide = async () => {
     if (pickup && destination) {
       setPanelOpen(false);
       setVehiclePanelOpen(true);
+
+      const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/rides/get-fare`, {
+        params: { pickup, destination },
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`
+        }
+      })
+
+      setFare(response.data);
     }
   };
 
@@ -212,7 +243,7 @@ export default function Home() {
         </div>
 
         <button
-          onClick={handleFindRide} 
+          onClick={handleFindRide}
           className="mt-4 w-full rounded-md bg-green-600 py-3 text-base font-bold text-white active:opacity-80 transition-opacity">
           Find ride
         </button>
@@ -232,7 +263,12 @@ export default function Home() {
         ref={vehiclePanelRef}
         className="absolute bottom-0"
       >
-        <VechilePanel setVehiclePanelOpen={setVehiclePanelOpen} setConfirmRidePanelOpen={setConfirmRidePanelOpen} />
+        <VechilePanel
+          setVehiclePanelOpen={setVehiclePanelOpen}
+          setConfirmRidePanelOpen={setConfirmRidePanelOpen}
+          fare={fare}
+          setSelectedVehicle={setSelectedVehicle}
+        />
       </div>
 
       {/* Confirm Ride panel */}
@@ -240,7 +276,14 @@ export default function Home() {
         ref={confirmRidePanelRef}
         className="absolute bottom-0 w-full"
       >
-        <ConfirmRide setConfirmRidePanelOpen={setConfirmRidePanelOpen} setVechileFound={setVechileFound} />
+        <ConfirmRide
+          setConfirmRidePanelOpen={setConfirmRidePanelOpen}
+          setVechileFound={setVechileFound}
+          pickup={pickup}
+          destination={destination}
+          selectedVehicle={selectedVehicle}
+          fare={fare}
+        />
       </div>
 
       {/* Confirm Ride panel */}
@@ -248,7 +291,13 @@ export default function Home() {
         ref={vechileFoundRef}
         className="absolute bottom-0 w-full"
       >
-        <LookingForRide setVechileFound={setVechileFound} />
+        <LookingForRide
+          setVechileFound={setVechileFound}
+          pickup={pickup}
+          destination={destination}
+          selectedVehicle={selectedVehicle}
+          fare={fare}
+        />
       </div>
 
       {/* Waiting for ride panel */}
@@ -256,7 +305,10 @@ export default function Home() {
         ref={waitingForDriverRef}
         className="absolute bottom-0 w-full"
       >
-        <WaitingForDriver setWaitingForDriver={setWaitingForDriver} />
+        <WaitingForDriver
+          ride={ride}
+          setWaitingForDriver={setWaitingForDriver}
+        />
       </div>
 
     </div>
