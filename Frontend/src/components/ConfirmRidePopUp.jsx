@@ -65,7 +65,7 @@ export default function ConfirmRidePopUp(props) {
 
         {/* Pickup */}
         <div className="flex items-start gap-3 py-3 border-b border-gray-100">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="mt-0.5 flex-shrink-0">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="mt-0.5 shrink-0">
             <path
               d="M12 21s-7-6.5-7-11a7 7 0 1114 0c0 4.5-7 11-7 11z"
               stroke="#111827"
@@ -82,7 +82,7 @@ export default function ConfirmRidePopUp(props) {
 
         {/* Destination */}
         <div className="flex items-start gap-3 py-3 border-b border-gray-100">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="mt-0.5 flex-shrink-0">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="mt-0.5 shrink-0">
             <rect x="5" y="5" width="14" height="14" rx="2" stroke="#111827" strokeWidth="1.6" />
             <circle cx="12" cy="12" r="2.2" fill="#111827" />
           </svg>
@@ -95,7 +95,7 @@ export default function ConfirmRidePopUp(props) {
 
         {/* Payment */}
         <div className="flex items-start gap-3 py-3">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="mt-0.5 flex-shrink-0">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="mt-0.5 shrink-0">
             <rect x="3" y="6" width="18" height="13" rx="2" stroke="#111827" strokeWidth="1.6" />
             <path d="M3 10h18" stroke="#111827" strokeWidth="1.6" />
           </svg>
