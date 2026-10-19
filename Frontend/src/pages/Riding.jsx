@@ -1,10 +1,15 @@
 import React, { useRef, useEffect } from "react";
 import gsap from "gsap";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import { useState } from "react";
 
 export default function Riding(props) {
+    const location = useLocation();
+    const { ride } = location.state || {}
     const panelRef = useRef(null);
     const mapRef = useRef(null);
+
+    console.log(ride);
 
     useEffect(() => {
         if (!panelRef.current) return;
@@ -60,11 +65,11 @@ export default function Riding(props) {
                         </svg>
 
                         <div className="text-right">
-                            <p className="text-lg font-bold text-gray-900">shiv gupta</p>
+                            <p className="text-lg font-bold text-gray-900">{ride?.captain.fullname.firstname + " " + ride?.captain.fullname.lastname}</p>
                             <p className="text-lg font-extrabold tracking-wide text-gray-900">
-                                ABCD!@#$
+                                {ride?.captain.vechile.plate}
                             </p>
-                            <p className="text-sm text-gray-500">Maruti suzuki alto</p>
+                            <p className="text-sm text-gray-500">{ride?.captain.vechile.vechileType}</p>
                         </div>
                     </div>
 
@@ -80,10 +85,7 @@ export default function Riding(props) {
                         </svg>
                         <div>
                             <p className="font-semibold text-gray-900">
-                                sfsfsfsfsdf
-                            </p>
-                            <p className="text-sm text-gray-500">
-                                sgsdgasgasdfd
+                                {ride?.destination}
                             </p>
                         </div>
                     </div>
@@ -95,8 +97,8 @@ export default function Riding(props) {
                             <path d="M3 10h18" stroke="#111827" strokeWidth="1.6" />
                         </svg>
                         <div>
-                            <p className="font-semibold text-gray-900">₹654</p>
-                            <p className="text-sm text-gray-500">Cash Cash</p>
+                            <p className="font-semibold text-gray-900">₹{ride?.fare}</p>
+                            <p className="text-sm text-gray-500">Cash</p>
                         </div>
                     </div>
 

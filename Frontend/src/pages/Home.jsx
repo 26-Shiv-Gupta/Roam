@@ -9,6 +9,7 @@ import axios from "axios";
 import { SocketContext } from "../context/SocketContext";
 import { UserDataContext } from "../context/UserContext";
 import { useContext } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function Home() {
   const [activeField, setActiveField] = useState(null);
@@ -34,6 +35,7 @@ export default function Home() {
 
   const { user } = useContext(UserDataContext);
   const { socket } = useContext(SocketContext);
+  const navigate = useNavigate();
 
   useEffect(() => {
     socket.emit('join', { userType: 'user', userId: user._id });
@@ -46,7 +48,7 @@ export default function Home() {
   })
 
   socket.on('ride-started', (ride) => {
-    console.log('ride-started')
+    navigate('/riding', { state: { ride } })
   })
   // Map shrinks / Find-a-trip panel grows when the user starts searching
   useEffect(() => {

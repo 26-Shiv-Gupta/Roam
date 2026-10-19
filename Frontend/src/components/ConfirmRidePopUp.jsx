@@ -29,6 +29,10 @@ export default function ConfirmRidePopUp(props) {
         Authorization: `Bearer ${localStorage.getItem('token')}`
       }
     })
+
+    if (response.status === 200) {
+      navigate('/captain-riding')
+    }
   }
 
   return (
