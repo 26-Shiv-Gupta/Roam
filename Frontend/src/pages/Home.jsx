@@ -10,6 +10,7 @@ import { SocketContext } from "../context/SocketContext";
 import { UserDataContext } from "../context/UserContext";
 import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
+import LiveLocationMap from "../components/LiveLocationMap";
 
 export default function Home() {
   const [activeField, setActiveField] = useState(null);
@@ -50,6 +51,11 @@ export default function Home() {
   socket.on('ride-started', (ride) => {
     navigate('/riding', { state: { ride } })
   })
+
+  socket.on('ride-ended', (ride)=> {
+    navigate('/home')
+  })
+
   // Map shrinks / Find-a-trip panel grows when the user starts searching
   useEffect(() => {
     if (panelOpen) {
@@ -171,10 +177,11 @@ export default function Home() {
 
       {/* Map and Logo section */}
       <div className="bg-cover">
-        <img
+        {/* <img
           src="https://media.wired.com/photos/59269cd37034dc5f91bec0f1/3:2/w_2560%2Cc_limit/GoogleMapTA.jpg"
           className="h-screen w-full object-cover"
-        />
+        /> */}
+        <LiveLocationMap />
         <div className="absolute top-5 left-5 text-2xl font-bold text-gray-900">
           <div className="flex items-center gap-2 mb-8">
             <svg

@@ -1,9 +1,14 @@
 import React, { useRef, useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import FinishRide from '../components/FinishRide'
 import gsap from 'gsap'
+import LiveLocationMap from '../components/LiveLocationMap'
 
 const CaptainRiding = () => {
+
+    const location = useLocation();
+    const { ride } = location.state || {}
+    console.log(ride)
 
     const [finishRidePanel, setFinishRidePanel] = useState(false)
 
@@ -23,10 +28,11 @@ const CaptainRiding = () => {
         <div className="relative w-full h-screen bg-neutral-100 overflow-hidden">
             {/* Map and Logo section */}
             <div className="bg-cover">
-                <img
+                {/* <img
                     src="https://media.wired.com/photos/59269cd37034dc5f91bec0f1/3:2/w_2560%2Cc_limit/GoogleMapTA.jpg"
                     className="h-screen w-full object-cover"
-                />
+                /> */}
+                <LiveLocationMap />
                 {/* Logo */}
                 <div className="absolute top-5 left-5 text-2xl font-bold text-gray-900">
                     <div className="flex items-center gap-2 mb-8">
@@ -92,7 +98,7 @@ const CaptainRiding = () => {
                 ref={FinishRidePanelRef}
                 className="absolute bottom-0 w-full"
             >
-                <FinishRide  />
+                <FinishRide ride={ride} />
             </div>
 
 

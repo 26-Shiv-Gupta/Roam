@@ -1,18 +1,11 @@
 import React, { useRef, useEffect } from "react";
 import gsap from "gsap";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
-export default function FinishRide({
-  riderName = "Harshi Pateliya",
-  riderAvatar = "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80",
-  distance = "2.2 KM",
-  pickup = "562/11-A, Kankariya Talab, Bhopal",
-  destination = "562/11-A, Kankariya Talab, Bhopal",
-  price = "193.20",
-  onLogout,
-  onCollapse,
-  onCompleteRide,
-}) {
+export default function FinishRide(props) {
   const panelRef = useRef(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!panelRef.current) return;
@@ -22,6 +15,20 @@ export default function FinishRide({
       { y: 0, opacity: 1, duration: 0.4, ease: "power3.out" }
     );
   }, []);
+
+  const handleCompleteRide = async () => {
+    const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/rides/finish-ride`, {
+      rideId: props.ride?._id
+    }, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`
+      }
+    })
+
+    if(response.status === 200) {
+      navigate('/captain-home')
+    }
+  }
 
   return (
     <div className="w-full bg-neutral-100 flex justify-center">
@@ -40,13 +47,13 @@ export default function FinishRide({
           <div className="flex items-center justify-between rounded-xl bg-amber-400 px-4 py-3 mb-4">
             <div className="flex items-center gap-3">
               <img
-                src={riderAvatar}
-                alt={riderName}
+                src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80"
+                alt="profile pic"
                 className="h-10 w-10 rounded-full object-cover"
               />
-              <p className="font-semibold text-gray-900">{riderName}</p>
+              <p className="font-semibold text-gray-900">{props.ride?.user.fullname.firstname + " " + props.ride?.user.fullname.lastname}</p>
             </div>
-            <p className="font-semibold text-gray-900">{distance}</p>
+            <p className="font-semibold text-gray-900">544 Km</p>
           </div>
 
           {/* Pickup */}
@@ -61,10 +68,7 @@ export default function FinishRide({
             </svg>
             <div>
               <p className="font-semibold text-gray-900">
-                {pickup.split(",")[0]}
-              </p>
-              <p className="text-sm text-gray-500">
-                {pickup.split(",").slice(1).join(",").trim()}
+                {props.ride?.pickup}
               </p>
             </div>
           </div>
@@ -77,10 +81,7 @@ export default function FinishRide({
             </svg>
             <div>
               <p className="font-semibold text-gray-900">
-                {destination.split(",")[0]}
-              </p>
-              <p className="text-sm text-gray-500">
-                {destination.split(",").slice(1).join(",").trim()}
+                {props.ride?.destination}
               </p>
             </div>
           </div>
@@ -92,14 +93,14 @@ export default function FinishRide({
               <path d="M3 10h18" stroke="#111827" strokeWidth="1.6" />
             </svg>
             <div>
-              <p className="font-semibold text-gray-900">₹{price}</p>
-              <p className="text-sm text-gray-500">Cash Cash</p>
+              <p className="font-semibold text-gray-900">₹{props.ride?.fare}</p>
+              <p className="text-sm text-gray-500">Cash</p>
             </div>
           </div>
 
           <button
             type="button"
-            onClick={onCompleteRide}
+            onClick={handleCompleteRide}
             className="mt-5 w-full rounded-md bg-green-600 py-3.5 text-base font-bold text-white active:opacity-80 transition-opacity"
           >
             Complete Ride
