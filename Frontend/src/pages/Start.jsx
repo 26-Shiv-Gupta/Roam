@@ -1,10 +1,9 @@
 import React from 'react'
-// import RoamLogo from '../components/RoamLogo'
-import CityIllustration from '../components/CityIllustration'
 import { Link } from 'react-router-dom'
 import PaginationDots from '../components/Paginationdots'
 import { useState, useRef, useEffect } from 'react'
 import backgroundImage from '../assets/Roam_background_img.png'
+import UserRoamLogo from '../components/UserRoamLogo'
 
 const Start = () => {
 
@@ -59,10 +58,10 @@ const Start = () => {
     <div className="flex h-dvh w-full justify-center overflow-hidden bg-[#14112E] font-sans">
       {/* Mobile frame: capped width on large screens, full viewport on phones */}
       <div className="relative flex h-dvh w-full max-w-md flex-col overflow-hidden bg-white">
-        {/* Hero */}
+        {/* Logo */}
         <div className="relative min-h-0 flex-1 overflow-hidden bg-[#1E1B4B]">
-          <img src={backgroundImage} />
-          <div className="absolute left-6 top-7">
+          <img src={backgroundImage} alt='Background-image' />
+          {/* <div className="absolute left-6 top-7">
             <div className={`flex items-center gap-2.5`}>
               <svg
                 aria-hidden="true"
@@ -84,7 +83,8 @@ const Start = () => {
                 Roam
               </span>
             </div>
-          </div>
+          </div> */}
+          <UserRoamLogo className='#fff' />
         </div>
 
         {/* Bottom sheet */}
