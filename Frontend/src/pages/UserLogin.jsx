@@ -1,121 +1,137 @@
-import axios from 'axios';
-import React, { useContext } from 'react'
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { UserDataContext } from '../context/UserContext';
-import { useNavigate } from 'react-router-dom';
+import axios from 'axios'
+import React, { useContext, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { UserDataContext } from '../context/UserContext'
+import UserRoamLogo from '../components/UserRoamLogo'
+import FormField from '../components/FormField'
 
 const UserLogin = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  const {user, setUser} = useContext(UserDataContext);
-  const navigate = useNavigate();
-
-  const userData = {
-    email: email,
-    password: password
-  }
+  const { setUser } = useContext(UserDataContext)
+  const navigate = useNavigate()
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    e.preventDefault()
+    setError('')
+    setLoading(true)
 
-    const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/users/login`, userData)
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/users/login`,
+        { email, password }
+      )
 
-    if(response.status === 200) {
-      const data = response.data
-      setUser(data.user)
-      localStorage.setItem('token', data.token);
-      navigate('/home')
+      if (response.status === 200) {
+        const data = response.data
+        setUser(data.user)
+        localStorage.setItem('token', data.token)
+        navigate('/home')
+      }
+    } catch (err) {
+      setError(
+        err.response?.data?.message || 'Login failed. Check your email and password.'
+      )
+      setPassword('')
+    } finally {
+      setLoading(false)
     }
-
-    setEmail('');
-    setPassword('');
   }
 
   return (
-    <div className="w-full min-h-screen bg-neutral-100 flex justify-center">
-      {/* Mobile frame: fills the viewport on phones, capped on larger screens */}
-      <div className="w-full max-w-md min-h-screen bg-white flex flex-col px-5 pt-8 pb-8">
-        {/* Logo */}
-        <div className="flex items-center gap-2 mb-8">
-          <svg
-            width="26"
-            height="26"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path d="M12 2L2 7v10l10 5 10-5V7L12 2z" fill="black" />
-            <circle cx="12" cy="12" r="3.2" fill="white" />
-          </svg>
-          <span className="text-2xl font-bold tracking-tight text-gray-900">
-            Roam
-          </span>
-        </div>
+    <div className="flex h-dvh w-full justify-center overflow-hidden bg-white font-sans">
+      {/* Plain white mobile frame, nothing overlaps */}
+      <div className="flex h-dvh w-full max-w-md flex-col overflow-hidden bg-white">
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-6 pb-6 pt-7">
+          <UserRoamLogo />
+          <div className='h-5'></div>
+          <h1 className="mt-8 text-[28px] font-extrabold leading-tight tracking-tight text-[#14112E]">
+            Welcome back
+          </h1>
+          <p className="mt-1.5 text-[15px] font-medium text-[#4B5069]">
+            Log in to continue your journey.
+          </p>
 
-        {/* Email */}
-        <form action="" onSubmit={handleSubmit}>
-          <label
-            htmlFor="email"
-            className="block text-base font-semibold text-gray-900 mb-2"
-          >
-            What's your email
-          </label>
-          <input
-            id="email"
-            type="email"
-            inputMode="email"
-            autoComplete="email"
-            placeholder="email@example.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-md border border-transparent bg-neutral-100 px-3 py-3 text-base text-gray-900 placeholder-gray-400 outline-none focus:border-amber-500 focus:bg-white"
-          />
+          <form onSubmit={handleSubmit} className="mt-7 flex flex-col gap-4">
+            <FormField
+              label="Email"
+              type="email"
+              inputMode="email"
+              placeholder="email@example.com"
+              autoComplete="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
 
-          {/* Password */}
-          <label
-            htmlFor="password"
-            className="block text-base font-semibold text-gray-900 mt-6 mb-2"
-          >
-            Enter Password
-          </label>
-          <input
-            id="password"
-            type="password"
-            autoComplete="current-password"
-            placeholder="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-md border border-transparent bg-neutral-100 px-3 py-3 text-base text-gray-900 placeholder-gray-400 outline-none focus:border-amber-500 focus:bg-white"
-          />
+            <FormField
+              label="Password"
+              type="password"
+              placeholder="Enter your password"
+              autoComplete="current-password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
 
-          {/* Login */}
-          <button
-            type="submit"
-            className="mt-6 w-full rounded-md bg-black py-3.5 text-base font-bold text-white active:opacity-80 transition-opacity"
-          >
-            Login
-          </button>
-        </form>
+            {error && (
+              <p
+                role="alert"
+                className="rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700"
+              >
+                {error}
+              </p>
+            )}
 
-        <p className="mt-3 text-center text-sm text-gray-700">
-          New here?{" "}
-          <Link to='/user-register' className="text-blue-600 hover:underline">
-            Create new Account
+            <button
+              type="submit"
+              disabled={loading}
+              className="mt-2 flex h-14 w-full items-center justify-center rounded-2xl bg-[#2B2F77] text-base font-bold text-white shadow-[0_8px_20px_rgba(43,47,119,0.28)] transition hover:bg-[#3a3fa0] active:scale-[0.98] disabled:opacity-60"
+            >
+              {loading ? 'Logging in…' : 'Login'}
+            </button>
+          </form>
+
+          <p className="mt-4 text-center text-sm font-medium text-[#4B5069]">
+            New here?{' '}
+            <Link
+              to="/user-register"
+              className="font-bold text-[#2B2F77] hover:underline"
+            >
+              Create new account
+            </Link>
+          </p>
+
+          {/* Pushed to the bottom */}
+          <Link
+            to="/captain-login"
+            className="mt-auto flex h-14 w-full shrink-0 items-center justify-center gap-2 rounded-2xl border-2 border-[#2B2F77] bg-white text-base font-bold text-[#2B2F77] transition hover:bg-[#F4F5FA] active:scale-[0.98]"
+          >
+            <svg
+              aria-hidden="true"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M5 16l1.5-5.5A2 2 0 0 1 8.4 9h7.2a2 2 0 0 1 1.9 1.5L19 16" />
+              <path d="M3 16h18v3a1 1 0 0 1-1 1h-1.5a1 1 0 0 1-1-1v-1h-9v1a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z" />
+              <circle cx="7.5" cy="13.5" r="0.8" fill="currentColor" />
+              <circle cx="16.5" cy="13.5" r="0.8" fill="currentColor" />
+            </svg>
+            Sign in as Captain
           </Link>
-        </p>
-
-        {/* Pushed to the bottom of the screen */}
-        <Link
-          to='/captain-login'
-          className="flex items-center justify-center mt-auto w-full rounded-md bg-green-600 py-3.5 text-base font-bold text-white active:opacity-80 transition-opacity"
-        >
-          Sign in as Captain
-        </Link>
+        </div>
       </div>
     </div>
-  );
+  )
 }
 
 export default UserLogin

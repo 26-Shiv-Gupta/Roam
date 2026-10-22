@@ -88,7 +88,7 @@ const Start = () => {
         </div>
 
         {/* Bottom sheet */}
-        <div className="relative z-10 -mt-8 flex shrink-0 flex-col gap-3.5 overflow-hidden rounded-t-[32px] bg-white px-6 pb-8 pt-7">
+        <div className="relative z-10 -mt-8 flex shrink-0 flex-col gap-3.5 overflow-hidden rounded-t-4xl bg-white px-6 pb-8 pt-7">
           <PaginationDots
             total={slides.length}
             active={index}
@@ -121,7 +121,7 @@ const Start = () => {
                     <br />
                     {s.title[1]}
                   </h1>
-                  <p className="min-h-[68px] text-[15px] font-medium leading-relaxed text-[#4B5069]">
+                  <p className="min-h-17 text-[15px] font-medium leading-relaxed text-[#4B5069]">
                     {s.text}
                   </p>
                 </div>
