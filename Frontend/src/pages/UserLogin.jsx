@@ -95,20 +95,17 @@ const UserLogin = () => {
             </button>
           </form>
 
-          <p className="mt-4 text-center text-sm font-medium text-[#4B5069]">
-            New here?{' '}
-            <Link
-              to="/user-register"
-              className="font-bold text-[#2B2F77] hover:underline"
-            >
-              Create new account
-            </Link>
-          </p>
+          <div className="my-4 flex items-center gap-3" aria-hidden="true">
+            <span className="h-px flex-1 bg-[#E3E6F2]" />
+            <span className="text-xs font-semibold uppercase tracking-wide text-[#9AA0BA]">
+              or
+            </span>
+            <span className="h-px flex-1 bg-[#E3E6F2]" />
+          </div>
 
-          {/* Pushed to the bottom */}
           <Link
             to="/captain-login"
-            className="mt-auto flex h-14 w-full shrink-0 items-center justify-center gap-2 rounded-2xl border-2 border-[#2B2F77] bg-white text-base font-bold text-[#2B2F77] transition hover:bg-[#F4F5FA] active:scale-[0.98]"
+            className="flex h-14 w-full shrink-0 items-center justify-center gap-2 rounded-2xl border-2 border-[#2B2F77] bg-white text-base font-bold text-[#2B2F77] transition hover:bg-[#F4F5FA] active:scale-[0.98]"
           >
             <svg
               aria-hidden="true"
@@ -128,6 +125,16 @@ const UserLogin = () => {
             </svg>
             Sign in as Captain
           </Link>
+
+          <p className="mt-4 text-center text-sm font-medium text-[#4B5069]">
+            New here?{' '}
+            <Link
+              to="/user-register"
+              className="font-bold text-[#2B2F77] hover:underline"
+            >
+              Create new account
+            </Link>
+          </p>
         </div>
       </div>
     </div>

@@ -5,8 +5,8 @@ import { useState } from 'react'
 const UserRoamLogo = ({ className = '' }) => {
     const [stroke, setStroke] = useState('#fff')
 
-    useEffect (() => {
-        if(className === '#fff') {
+    useEffect(() => {
+        if (className === '#fff') {
             setStroke('#000')
         } else {
             setStroke('#fff')
@@ -23,16 +23,19 @@ const UserRoamLogo = ({ className = '' }) => {
                     fill={`${className}`}
                     xmlns="http://www.w3.org/2000/svg"
                 >
-                    <rect width="32" height="32" rx="10"/>
+                    <rect width="32" height="32" rx="10" />
                     <path
                         d="M16 7L23 11V21L16 25L9 21V11Z"
                         stroke={`${stroke}`}
                         strokeWidth="2.4"
-                        fill={`${className}`}                        
+                        fill={`${className}`}
                         strokeLinejoin="round"
                     />
                 </svg>
-                <span className={`text-[22px] font-extrabold tracking-tight text-[${className}]`}>
+                <span
+                    className="text-[22px] font-extrabold tracking-tight"
+                    style={{ color: className }}
+                >
                     Roam
                 </span>
             </div>
