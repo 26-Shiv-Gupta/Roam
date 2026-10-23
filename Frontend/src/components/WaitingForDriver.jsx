@@ -1,105 +1,149 @@
-import React, { useRef, useEffect } from "react";
-import gsap from "gsap";
+import React, { useRef, useEffect } from 'react'
+import gsap from 'gsap'
+import { VEHICLE_IMAGES, VEHICLE_NAMES } from '../../public/vechileImages'
+
+// Captains register "moto", while rides use "motorcycle"
+const normalizeType = (t) => (t === 'moto' ? 'motorcycle' : t)
 
 export default function WaitingForDriver(props) {
-  const panelRef = useRef(null);
+  const panelRef = useRef(null)
+
+  const captain = props.ride?.captain
+  const first = captain?.fullname?.firstname || ''
+  const last = captain?.fullname?.lastname || ''
+  const driverName = `${first} ${last}`.trim() || 'Your driver'
+  const plate = captain?.vechile?.plate
+  const type = normalizeType(captain?.vechile?.vechileType)
+  const image = VEHICLE_IMAGES[type]
+  const typeName = VEHICLE_NAMES[type] || captain?.vechile?.vechileType
+  const otp = props.ride?.otp ? String(props.ride.otp) : ''
 
   useEffect(() => {
-    if (!panelRef.current) return;
+    if (!panelRef.current) return
     gsap.fromTo(
       panelRef.current,
       { y: 40, opacity: 0 },
-      { y: 0, opacity: 1, duration: 0.4, ease: "power3.out" }
-    );
-  }, []);
+      { y: 0, opacity: 1, duration: 0.4, ease: 'power3.out' }
+    )
+  }, [])
 
   return (
-    <div className="w-full min-h-screen bg-neutral-100 flex justify-center">
+    <div className="mx-auto w-full max-w-md">
       <div
         ref={panelRef}
-        className="w-full max-w-md min-h-screen bg-white flex flex-col px-5 pt-3 pb-6"
+        className="w-full rounded-t-[32px] bg-white px-6 pb-8 pt-2 font-sans shadow-[0_-8px_30px_rgba(20,17,46,0.12)]"
       >
-        {/* Collapse handle */}
+        {/* Handle (tap to close) */}
         <button
           type="button"
-          onClick={() => { props.setWaitingForDriver(false) }}
-          aria-label="Close vehicle panel"
-          className="mx-auto mb-3 block h-1.5 w-10 rounded-full bg-gray-300"
-        />
+          onClick={() => props.setWaitingForDriver(false)}
+          aria-label="Close driver panel"
+          className="group mx-auto flex h-8 w-16 items-center justify-center"
+        >
+          <span className="h-1.5 w-10 rounded-full bg-[#CBD0E6] transition group-hover:bg-[#9AA0BA]" />
+        </button>
+
+        <h2 className="text-xl font-extrabold tracking-tight text-[#14112E]">
+          Your driver is on the way
+        </h2>
+        <p className="mt-1 text-sm font-medium text-[#4B5069]">
+          Share the OTP with your driver when they arrive.
+        </p>
 
         {/* Driver + vehicle */}
-        <div className="flex items-center justify-between mt-2 mb-6">
-          <svg width="88" height="52" viewBox="0 0 130 70" fill="none">
-            <ellipse cx="65" cy="60" rx="45" ry="5" fill="#f3f4f6" />
-            <path
-              d="M18 44l6-16a8 8 0 017.4-5h47.2a8 8 0 017.4 5l6 16"
-              fill="white"
-              stroke="#111827"
-              strokeWidth="1.6"
+        <div className="my-4 flex items-center justify-between gap-3 rounded-2xl bg-[#F4F5FA] px-4 py-3">
+          {image && (
+            <img
+              src={image}
+              alt={typeName || 'Vehicle'}
+              draggable={false}
+              className="h-24 w-24 shrink-0 object-contain"
             />
-            <path
-              d="M14 44h102v6a3 3 0 01-3 3H17a3 3 0 01-3-3v-6z"
-              fill="#111827"
-            />
-            <rect x="30" y="26" width="70" height="14" rx="4" fill="#e5e7eb" />
-            <circle cx="34" cy="53" r="7" fill="#111827" />
-            <circle cx="34" cy="53" r="3" fill="white" />
-            <circle cx="96" cy="53" r="7" fill="#111827" />
-            <circle cx="96" cy="53" r="3" fill="white" />
-          </svg>
+          )}
 
-          <div className="text-right">
-            <p className="text-lg font-bold text-gray-900">{props.ride?.captain.fullname.firstname + " " + props.ride?.captain.fullname.lastname}</p>
-            <p className="text-lg font-extrabold tracking-wide text-gray-900">
-              {props.ride?.captain.vechile.plate}
-            </p>
-            <p className="text-sm text-gray-500">{props.ride?.captain.vechile.vechileType}</p>
-            <p className="text-sm text-gray-500">OTP: {props.ride?.otp}</p>
+          <div className="min-w-0 flex-1 text-right">
+            <p className="truncate text-base font-bold text-[#14112E]">{driverName}</p>
+            {plate && (
+              <p className="mt-0.5 inline-block rounded-lg border-2 border-[#14112E] bg-white px-2 py-0.5 text-sm font-extrabold tracking-wider text-[#14112E]">
+                {plate}
+              </p>
+            )}
           </div>
         </div>
 
-        {/* Pickup */}
-        <div className="flex items-start gap-3 py-3 border-b border-gray-100">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="mt-0.5 shrink-0">
-            <path
-              d="M12 21s-7-6.5-7-11a7 7 0 1114 0c0 4.5-7 11-7 11z"
-              stroke="#111827"
-              strokeWidth="1.6"
+        {/* OTP */}
+        <div className="mb-4 rounded-2xl border-2 border-[#2B2F77] bg-[#2B2F77]/5 px-4 py-3">
+          <p className="text-xs font-bold uppercase tracking-wide text-[#2B2F77]">Ride OTP</p>
+          <div className="mt-2 flex gap-2" aria-label={`OTP ${otp.split('').join(' ')}`}>
+            {otp ? (
+              otp.split('').map((d, i) => (
+                <span
+                  key={i}
+                  aria-hidden="true"
+                  className="flex h-12 flex-1 items-center justify-center rounded-xl bg-white text-2xl font-extrabold text-[#14112E] shadow-[0_2px_8px_rgba(20,17,46,0.08)]"
+                >
+                  {d}
+                </span>
+              ))
+            ) : (
+              <span className="text-lg font-extrabold text-[#14112E]">—</span>
+            )}
+          </div>
+        </div>
+
+        {/* Route */}
+        <div className="relative flex flex-col gap-1">
+          <span
+            aria-hidden="true"
+            className="absolute left-[9px] top-8 h-[calc(100%-4rem)] w-0.5 rounded-full bg-[#CBD0E6]"
+          />
+
+          <div className="flex items-start gap-3 py-2.5">
+            <span
+              aria-hidden="true"
+              className="mt-1 h-5 w-5 shrink-0 rounded-full border-[5px] border-[#2B2F77] bg-white"
             />
-            <circle cx="12" cy="10" r="2.2" stroke="#111827" strokeWidth="1.6" />
-          </svg>
-          <div>
-            <p className="font-semibold text-gray-900">
-              {props.ride?.pickup}
-            </p>
+            <div className="min-w-0">
+              <p className="text-xs font-bold uppercase tracking-wide text-[#9AA0BA]">Pick-up</p>
+              <p className="font-semibold leading-snug text-[#14112E]">{props.ride?.pickup}</p>
+            </div>
+          </div>
+
+          <div className="flex items-start gap-3 py-2.5">
+            <span aria-hidden="true" className="mt-1 flex h-5 w-5 shrink-0 items-center justify-center">
+              <span className="h-3.5 w-3.5 rounded-[4px] bg-[#C2410C]" />
+            </span>
+            <div className="min-w-0">
+              <p className="text-xs font-bold uppercase tracking-wide text-[#9AA0BA]">Destination</p>
+              <p className="font-semibold leading-snug text-[#14112E]">{props.ride?.destination}</p>
+            </div>
           </div>
         </div>
 
-        {/* Destination */}
-        <div className="flex items-start gap-3 py-3 border-b border-gray-100">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="mt-0.5 shrink-0">
-            <rect x="5" y="5" width="14" height="14" rx="2" stroke="#111827" strokeWidth="1.6" />
-            <circle cx="12" cy="12" r="2.2" fill="#111827" />
-          </svg>
-          <div>
-            <p className="font-semibold text-gray-900">
-              {props.ride?.destination}
-            </p>
+        {/* Fare */}
+        <div className="mt-2 flex items-center justify-between rounded-2xl border-2 border-[#E3E6F2] px-4 py-3">
+          <div className="flex items-center gap-3">
+            <svg
+              aria-hidden="true"
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#2B2F77"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <rect x="3" y="6" width="18" height="13" rx="2" />
+              <path d="M3 10h18" />
+            </svg>
+            <span className="text-sm font-semibold text-[#4B5069]">Cash</span>
           </div>
-        </div>
-
-        {/* Payment */}
-        <div className="flex items-start gap-3 py-3">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="mt-0.5 shrink-0">
-            <rect x="3" y="6" width="18" height="13" rx="2" stroke="#111827" strokeWidth="1.6" />
-            <path d="M3 10h18" stroke="#111827" strokeWidth="1.6" />
-          </svg>
-          <div>
-            <p className="font-semibold text-gray-900">₹{props.ride?.fare}</p>
-            <p className="text-sm text-gray-500">Cash</p>
-          </div>
+          <span className="text-xl font-extrabold text-[#14112E]">
+            {props.ride?.fare != null ? `₹${props.ride.fare}` : '—'}
+          </span>
         </div>
       </div>
     </div>
-  );
+  )
 }

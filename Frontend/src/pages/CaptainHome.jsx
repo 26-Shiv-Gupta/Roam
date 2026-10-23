@@ -1,68 +1,64 @@
-import React, { useRef, useState, useEffect } from 'react'
-import RidePopUp from '../components/RidePopUp';
-import gsap from "gsap";
-import ConfirmRidePopUp from '../components/ConfirmRidePopUp';
-import { SocketContext } from '../context/SocketContext';
-import { useContext } from 'react';
-import { CaptainDataContext } from '../context/CaptainContext';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import LiveLocationMap from '../components/LiveLocationMap';
+import React, { useRef, useState, useEffect, useContext } from 'react'
+import gsap from 'gsap'
+import axios from 'axios'
+import { useNavigate } from 'react-router-dom'
+import RidePopUp from '../components/RidePopUp'
+import ConfirmRidePopUp from '../components/ConfirmRidePopUp'
+import LiveLocationMap from '../components/LiveLocationMap'
+import CaptainRoamLogo from '../components/CaptainRoamLogo'
+import { SocketContext } from '../context/SocketContext'
+import { CaptainDataContext } from '../context/CaptainContext'
+
+const ICON = {
+  width: 24,
+  height: 24,
+  viewBox: '0 0 24 24',
+  fill: 'none',
+  stroke: 'currentColor',
+  strokeWidth: 1.7,
+  strokeLinecap: 'round',
+  strokeLinejoin: 'round',
+  'aria-hidden': true,
+}
 
 const stats = [
   {
-    label: "Hours Online",
-    value: "10.2",
+    label: 'Hours online',
+    value: '10.2',
     icon: (
-      <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-        <circle cx="12" cy="12" r="9" stroke="#111827" strokeWidth="1.6" />
-        <path
-          d="M12 7v5l3.5 2"
-          stroke="#111827"
-          strokeWidth="1.6"
-          strokeLinecap="round"
-        />
+      <svg {...ICON}>
+        <circle cx="12" cy="12" r="9" />
+        <path d="M12 7v5l3.5 2" />
       </svg>
     ),
   },
   {
-    label: "Hours Online",
-    value: "10.2",
+    label: 'Distance (km)',
+    value: '10.2',
     icon: (
-      <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-        <path
-          d="M12 21a9 9 0 100-18 9 9 0 000 18z"
-          stroke="#111827"
-          strokeWidth="1.6"
-        />
-        <path
-          d="M12 12l4-3"
-          stroke="#111827"
-          strokeWidth="1.6"
-          strokeLinecap="round"
-        />
-        <path d="M8 16l1-1M16 16l-1-1M6 12h1M17 12h1" stroke="#111827" strokeWidth="1.6" strokeLinecap="round" />
+      <svg {...ICON}>
+        <path d="M12 21a9 9 0 100-18 9 9 0 000 18z" />
+        <path d="M12 12l4-3M8 16l1-1M16 16l-1-1M6 12h1M17 12h1" />
       </svg>
     ),
   },
   {
-    label: "Hours Online",
-    value: "10.2",
+    label: 'Total jobs',
+    value: '10',
     icon: (
-      <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-        <rect x="5" y="3" width="14" height="18" rx="2" stroke="#111827" strokeWidth="1.6" />
-        <path d="M9 8h6M9 12h6M9 16h3" stroke="#111827" strokeWidth="1.6" strokeLinecap="round" />
+      <svg {...ICON}>
+        <rect x="5" y="3" width="14" height="18" rx="2" />
+        <path d="M9 8h6M9 12h6M9 16h3" />
       </svg>
     ),
   },
-];
+]
 
 const CaptainHome = ({
-  captainName = "Harsh Patel",
-  captainAvatar = "https://images.unsplash.com/photo-1633332755192-727a05c4013d?auto=format&fit=crop&w=200&q=80",
-  earnings = "295.20",
+  captainName = 'Harsh Patel',
+  captainAvatar = 'https://images.unsplash.com/photo-1633332755192-727a05c4013d?auto=format&fit=crop&w=200&q=80',
+  earnings = '295.20',
 }) => {
-
   const [RidePopUpPanel, setRidePopUpPanel] = useState(false)
   const [confirmRidePopUpPanel, setConfirmRidePopUpPanel] = useState(false)
   const [ride, setRide] = useState(null)
@@ -70,183 +66,158 @@ const CaptainHome = ({
   const RidePopUpRef = useRef(null)
   const ConfirmRidePopUpRef = useRef(null)
 
-  const { socket } = useContext(SocketContext);
-  const { captain } = useContext(CaptainDataContext);
-  const navigate = useNavigate();
+  const { socket } = useContext(SocketContext)
+  const { captain } = useContext(CaptainDataContext)
+  const navigate = useNavigate()
 
   useEffect(() => {
-    socket.emit("join", { userType: 'captain', userId: captain._id });
-  }, [socket, captain._id]);
+    socket.emit('join', { userType: 'captain', userId: captain._id })
+  }, [socket, captain._id])
 
+  // Send the captain's location every 10s (and stop when leaving the page)
   useEffect(() => {
     const updateLocation = () => {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(position => {
-          socket.emit('update-location-captain', {
-            userId: captain._id,
-            location: {
-              ltd: position.coords.latitude,
-              lng: position.coords.longitude
-            }
-          })
+      if (!navigator.geolocation) return
+      navigator.geolocation.getCurrentPosition((position) => {
+        socket.emit('update-location-captain', {
+          userId: captain._id,
+          location: {
+            ltd: position.coords.latitude,
+            lng: position.coords.longitude,
+          },
         })
-      }
+      })
     }
 
-    setInterval(updateLocation, 10000);
-    updateLocation();
-  }, [])
+    updateLocation()
+    const id = setInterval(updateLocation, 10000)
+    return () => clearInterval(id)
+  }, [socket, captain._id])
 
-  socket.on('new-ride', (data) => {
-    setRide(data);
-    setRidePopUpPanel(true);
-  })
-
-  // Confirm Ride popup slides up from the bottom over everything else
+  // Listen for new rides once, and clean up
   useEffect(() => {
-    if (!ConfirmRidePopUpRef.current) return;
-    gsap.to(ConfirmRidePopUpRef.current, {
-      yPercent: confirmRidePopUpPanel ? 0 : 100,
-      duration: 0.45,
-      ease: "power3.out",
-    });
-  }, [confirmRidePopUpPanel]);
+    const onNewRide = (data) => {
+      setRide(data)
+      setRidePopUpPanel(true)
+    }
+    socket.on('new-ride', onNewRide)
+    return () => socket.off('new-ride', onNewRide)
+  }, [socket])
 
-  // Ride popup slides up from the bottom over everything else
-  useEffect(() => {
-    if (!RidePopUpRef.current) return;
-    gsap.to(RidePopUpRef.current, {
-      yPercent: RidePopUpPanel ? 0 : 100,
+  // Popups slide up from the bottom over everything else
+  const slide = (ref, open) => {
+    if (!ref.current) return
+    gsap.to(ref.current, {
+      yPercent: open ? 0 : 100,
       duration: 0.45,
-      ease: "power3.out",
-    });
-  }, [RidePopUpPanel]);
+      ease: 'power3.out',
+    })
+  }
+  useEffect(() => slide(ConfirmRidePopUpRef, confirmRidePopUpPanel), [confirmRidePopUpPanel])
+  useEffect(() => slide(RidePopUpRef, RidePopUpPanel), [RidePopUpPanel])
 
   const confirmRide = async () => {
-
-    const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/rides/confirm-ride`, {
-      rideId: ride._id,
-      captainId: captain._id
-    }, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`
-      }
-    })
-
-    setConfirmRidePopUpPanel(true);
+    try {
+      await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/rides/confirm-ride`,
+        { rideId: ride._id, captainId: captain._id },
+        { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+      )
+      setConfirmRidePopUpPanel(true)
+    } catch (error) {
+      console.error('Could not confirm ride:', error)
+    }
   }
 
   return (
-    <div className="relative w-full h-screen bg-neutral-100 overflow-hidden">
-      {/* Map and Logo section */}
-      <div className="bg-cover">
-        {/* <img
-          src="https://media.wired.com/photos/59269cd37034dc5f91bec0f1/3:2/w_2560%2Cc_limit/GoogleMapTA.jpg"
-          className="h-screen w-full object-cover"
-        /> */}
-        <LiveLocationMap />
-        {/* Logo */}
-        <div className="absolute top-5 left-5 text-2xl font-bold text-gray-900">
-          <div className="flex items-center gap-2 mb-8">
-            <svg
-              width="26"
-              height="26"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path d="M12 2L2 7v10l10 5 10-5V7L12 2z" fill="#16a34a" />
-              <circle cx="12" cy="12" r="4.6" stroke="white" strokeWidth="1.6" />
-              <circle cx="12" cy="12" r="1.5" fill="white" />
-              <path
-                d="M12 7.4v2.6M8.1 14.3l2.3-1.3M15.9 14.3l-2.3-1.3"
-                stroke="white"
-                strokeWidth="1.6"
-                strokeLinecap="round"
-              />
-            </svg>
-            <span className="text-2xl font-bold tracking-tight text-gray-900">
-              Roam
-            </span>
-            <span className="rounded bg-green-600/10 px-1.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-green-700">
-              Captain
-            </span>
-          </div>
-        </div>
-        {/* Logout Button */}
-        <button
-          type="button"
-          onClick={() => navigate('/captain-logout')}
-          aria-label="Logout"
-          className="absolute top-5 right-5 flex h-9 w-9 items-center justify-center rounded-full bg-white shadow"
-        >
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
-            <path
-              d="M9 4H6a2 2 0 00-2 2v12a2 2 0 002 2h3M16 16l4-4-4-4M20 12H9"
-              stroke="#111827"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </button>
+    <div className="relative h-dvh w-full overflow-hidden bg-[#F4F5FA] font-sans">
+      {/* Map */}
+      <LiveLocationMap />
+
+      {/* Logo chip */}
+      <div className="absolute left-4 top-4 z-10 rounded-2xl bg-white px-3 py-2 shadow-[0_6px_20px_rgba(20,17,46,0.15)]">
+        <CaptainRoamLogo />
       </div>
 
-      <div className='absolute w-full bottom-0 bg-white'>
-        <div className="flex items-center justify-between px-5 pt-5">
-          <div className="flex items-center gap-3">
+      {/* Logout */}
+      <button
+        type="button"
+        onClick={() => navigate('/captain-logout')}
+        aria-label="Logout"
+        className="absolute right-4 top-4 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-white text-[#14112E] shadow-[0_6px_20px_rgba(20,17,46,0.15)] transition hover:text-[#2B2F77] active:scale-95"
+      >
+        <svg
+          aria-hidden="true"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.9"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M9 4H6a2 2 0 00-2 2v12a2 2 0 002 2h3M16 16l4-4-4-4M20 12H9" />
+        </svg>
+      </button>
+
+      {/* Captain summary sheet */}
+      <div className="absolute bottom-0 left-0 w-full rounded-t-[32px] bg-white px-6 pb-7 pt-6 shadow-[0_-8px_30px_rgba(20,17,46,0.12)]">
+        <div className="flex items-center justify-between">
+          <div className="flex min-w-0 items-center gap-3">
             <img
               src={captainAvatar}
               alt={captainName}
-              className="h-11 w-11 rounded-full object-cover"
+              className="h-12 w-12 shrink-0 rounded-full border-2 border-white object-cover shadow-[0_0_0_2px_#16a34a]"
             />
-            <p className="font-semibold text-gray-900">{captainName}</p>
+            <div className="min-w-0">
+              <p className="truncate text-base font-extrabold text-[#14112E]">{captainName}</p>
+              <p className="flex items-center gap-1.5 text-xs font-semibold text-green-700">
+                <span className="h-2 w-2 rounded-full bg-green-600" />
+                Online
+              </p>
+            </div>
           </div>
+
           <div className="text-right">
-            <p className="text-2xl font-bold text-gray-900">₹{earnings}</p>
-            <p className="text-sm text-gray-500">Earned</p>
+            <p className="text-2xl font-extrabold tracking-tight text-[#14112E]">₹{earnings}</p>
+            <p className="text-xs font-semibold text-[#4B5069]">Earned today</p>
           </div>
         </div>
 
         {/* Stats */}
-        <div className="relative mx-5 mt-5 mb-6 rounded-2xl bg-neutral-100 px-4 py-5">
-          <span className="absolute top-3 right-4 h-1.5 w-1.5 rounded-full bg-gray-400" />
-          <div className="grid grid-cols-3 gap-2">
-            {stats.map((s, i) => (
-              <div key={i} className="flex flex-col items-center gap-1.5">
-                {s.icon}
-                <p className="text-base font-bold text-gray-900">{s.value}</p>
-                <p className="text-xs text-gray-500">{s.label}</p>
-              </div>
-            ))}
-          </div>
+        <div className="mt-5 grid grid-cols-3 gap-3">
+          {stats.map((s) => (
+            <div
+              key={s.label}
+              className="flex flex-col items-center gap-1.5 rounded-2xl bg-[#F4F5FA] px-2 py-4 text-center"
+            >
+              <span className="text-[#2B2F77]">{s.icon}</span>
+              <p className="text-lg font-extrabold text-[#14112E]">{s.value}</p>
+              <p className="text-xs font-semibold leading-tight text-[#4B5069]">{s.label}</p>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Ride Popup panel */}
-      <div
-        ref={RidePopUpRef}
-        className="absolute bottom-0 w-full"
-      >
+      {/* Ride popup panel */}
+      <div ref={RidePopUpRef} className="absolute bottom-0 w-full">
         <RidePopUp
           ride={ride}
           setRidePopUpPanel={setRidePopUpPanel}
           confirmRide={confirmRide}
-          setConfirmRidePopUpPanel={setConfirmRidePopUpPanel} />
+          setConfirmRidePopUpPanel={setConfirmRidePopUpPanel}
+        />
       </div>
 
-      {/* Confirm Ride popup Panel */}
-      <div
-        ref={ConfirmRidePopUpRef}
-        className="absolute bottom-0 w-full h-screen bg-white"
-      >
+      {/* Confirm ride popup panel */}
+      <div ref={ConfirmRidePopUpRef} className="absolute bottom-0 h-dvh w-full bg-white">
         <ConfirmRidePopUp
           ride={ride}
           captainId={captain._id}
           setConfirmRidePopUpPanel={setConfirmRidePopUpPanel}
         />
       </div>
-
     </div>
   )
 }

@@ -1,129 +1,141 @@
-import React, { useRef, useEffect } from "react";
-import gsap from "gsap";
-import axios from 'axios';
-import { UserDataContext } from "../context/UserContext";
-import { useContext } from "react";
+import React, { useRef, useEffect } from 'react'
+import gsap from 'gsap'
+import axios from 'axios'
+import { VEHICLE_IMAGES, VEHICLE_NAMES } from '../../public/vechileImages'
 
 export default function ConfirmRide(props) {
-    const panelRef = useRef(null);
-    const {user} = useContext(UserDataContext);
+  const panelRef = useRef(null)
 
-    // Slide the confirm sheet up on mount, same feel as the vehicle panel
-    useEffect(() => {
-        if (!panelRef.current) return;
-        gsap.fromTo(
-            panelRef.current,
-            { y: 40, opacity: 0 },
-            { y: 0, opacity: 1, duration: 0.4, ease: "power3.out" }
-        );
-    }, []);
+  const vehicle = props.selectedVehicle
+  const image = VEHICLE_IMAGES[vehicle]
+  const name = VEHICLE_NAMES[vehicle] || 'Ride'
+  const price = props.fare?.[vehicle]
 
-    const handleConfirmRide = async () => {
-        props.setVechileFound(true);
-        props.setConfirmRidePanelOpen(false);
+  // Slide the confirm sheet up on mount, same feel as the vehicle panel
+  useEffect(() => {
+    if (!panelRef.current) return
+    gsap.fromTo(
+      panelRef.current,
+      { y: 40, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.4, ease: 'power3.out' }
+    )
+  }, [])
 
-        const newRide = {
-            pickup: props.pickup,
-            destination: props.destination,
-            vehicleType: props.selectedVehicle,
-        }
+  const handleConfirmRide = async () => {
+    props.setVechileFound(true)
+    props.setConfirmRidePanelOpen(false)
 
-        const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/rides/create-ride`, newRide, 
-            {
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem('token')}`
-                }
-            }
-        );
-
-        // console.log(response.data);
+    const newRide = {
+      pickup: props.pickup,
+      destination: props.destination,
+      vehicleType: props.selectedVehicle,
     }
 
-    return (
-        <div className="bg-white rounded-t-2xl shadow-[0_-4px_16px_rgba(0,0,0,0.08)] px-5 pt-3 pb-10 max-w-md mx-auto">
+    try {
+      await axios.post(`${import.meta.env.VITE_BASE_URL}/rides/create-ride`, newRide, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+      })
+    } catch (error) {
+      console.error('Could not create ride:', error)
+      props.setVechileFound(false)
+      props.setConfirmRidePanelOpen(true)
+    }
+  }
 
-            {/* Collapse handle */}
-            <button
-                type="button"
-                onClick={() => { props.setConfirmRidePanelOpen(false) }}
-                aria-label="Close vehicle panel"
-                className="mx-auto mb-3 block h-1.5 w-10 rounded-full bg-gray-300"
-            />
-            {/* Confirm sheet */}
-            <h2 className="text-xl font-bold text-gray-900 mb-4">
-                Confirm your Ride
-            </h2>
+  return (
+    <div
+      ref={panelRef}
+      className="mx-auto w-full max-w-md rounded-t-[32px] bg-white px-6 pb-8 pt-2 font-sans shadow-[0_-8px_30px_rgba(20,17,46,0.12)]"
+    >
+      {/* Handle (tap to close) */}
+      <button
+        type="button"
+        onClick={() => props.setConfirmRidePanelOpen(false)}
+        aria-label="Close confirm panel"
+        className="group mx-auto flex h-8 w-16 items-center justify-center"
+      >
+        <span className="h-1.5 w-10 rounded-full bg-[#CBD0E6] transition group-hover:bg-[#9AA0BA]" />
+      </button>
 
-            <div className="flex justify-center mb-4">
-                <svg width="130" height="70" viewBox="0 0 130 70" fill="none">
-                    <ellipse cx="65" cy="60" rx="45" ry="5" fill="#f3f4f6" />
-                    <path
-                        d="M18 44l6-16a8 8 0 017.4-5h47.2a8 8 0 017.4 5l6 16"
-                        fill="white"
-                        stroke="#111827"
-                        strokeWidth="1.6"
-                    />
-                    <path
-                        d="M14 44h102v6a3 3 0 01-3 3H17a3 3 0 01-3-3v-6z"
-                        fill="#111827"
-                    />
-                    <rect x="30" y="26" width="70" height="14" rx="4" fill="#e5e7eb" />
-                    <circle cx="34" cy="53" r="7" fill="#111827" />
-                    <circle cx="34" cy="53" r="3" fill="white" />
-                    <circle cx="96" cy="53" r="7" fill="#111827" />
-                    <circle cx="96" cy="53" r="3" fill="white" />
-                </svg>
-            </div>
+      <h2 className="mb-3 text-xl font-extrabold tracking-tight text-[#14112E]">
+        Confirm your ride
+      </h2>
 
-            {/* Pickup */}
-            <div className="flex items-start gap-3 py-3 border-b border-gray-100">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="mt-0.5 shrink-0">
-                    <path
-                        d="M12 21s-7-6.5-7-11a7 7 0 1114 0c0 4.5-7 11-7 11z"
-                        stroke="#111827"
-                        strokeWidth="1.6"
-                    />
-                    <circle cx="12" cy="10" r="2.2" stroke="#111827" strokeWidth="1.6" />
-                </svg>
-                <div>
-                    <p className="font-semibold text-gray-900">
-                        {props.pickup}
-                    </p>
-                </div>
-            </div>
+      {/* Chosen vehicle image */}
+      <div className="mb-4 flex flex-col items-center rounded-2xl bg-[#F4F5FA]">
+        {image && (
+          <img
+            src={image}
+            alt={name}
+            draggable={false}
+            className="h-44 w-50 object-contain"
+          />
+        )}
+      </div>
 
-            {/* Destination */}
-            <div className="flex items-start gap-3 py-3 border-b border-gray-100">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="mt-0.5 shrink-0">
-                    <rect x="5" y="5" width="14" height="14" rx="2" stroke="#111827" strokeWidth="1.6" />
-                    <circle cx="12" cy="12" r="2.2" fill="#111827" />
-                </svg>
-                <div>
-                    <p className="font-semibold text-gray-900">
-                        {props.destination}
-                    </p>
-                </div>
-            </div>
+      {/* Route */}
+      <div className="relative flex flex-col gap-1">
+        <span
+          aria-hidden="true"
+          className="absolute left-[9px] top-8 h-[calc(100%-4rem)] w-0.5 rounded-full bg-[#CBD0E6]"
+        />
 
-            {/* Payment */}
-            <div className="flex items-start gap-3 py-3 border-b border-gray-100">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="mt-0.5 shrink-0">
-                    <rect x="3" y="6" width="18" height="13" rx="2" stroke="#111827" strokeWidth="1.6" />
-                    <path d="M3 10h18" stroke="#111827" strokeWidth="1.6" />
-                </svg>
-                <div>
-                    <p className="font-semibold text-gray-900">₹{props.fare[props.selectedVehicle]}</p>
-                    <p className="text-sm text-gray-500">Cash</p>
-                </div>
-            </div>
-
-            <button
-                type="button"
-                onClick={handleConfirmRide}
-                className="mt-6 w-full rounded-md bg-green-600 py-3.5 text-base font-bold text-white active:opacity-80 transition-opacity"
-            >
-                Confirm
-            </button>
+        <div className="flex items-start gap-3 py-2.5">
+          <span
+            aria-hidden="true"
+            className="mt-1 h-5 w-5 shrink-0 rounded-full border-[5px] border-[#2B2F77] bg-white"
+          />
+          <div className="min-w-0">
+            <p className="text-xs font-bold uppercase tracking-wide text-[#9AA0BA]">Pick-up</p>
+            <p className="font-semibold leading-snug text-[#14112E]">{props.pickup}</p>
+          </div>
         </div>
-    );
+
+        <div className="flex items-start gap-3 py-2.5">
+          <span
+            aria-hidden="true"
+            className="mt-1 flex h-5 w-5 shrink-0 items-center justify-center"
+          >
+            <span className="h-3.5 w-3.5 rounded-[4px] bg-[#C2410C]" />
+          </span>
+          <div className="min-w-0">
+            <p className="text-xs font-bold uppercase tracking-wide text-[#9AA0BA]">Destination</p>
+            <p className="font-semibold leading-snug text-[#14112E]">{props.destination}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Fare + payment */}
+      <div className="mt-2 flex items-center justify-between rounded-2xl border-2 border-[#E3E6F2] px-4 py-3">
+        <div className="flex items-center gap-3">
+          <svg
+            aria-hidden="true"
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#2B2F77"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <rect x="3" y="6" width="18" height="13" rx="2" />
+            <path d="M3 10h18" />
+          </svg>
+          <span className="text-sm font-semibold text-[#4B5069]">Cash</span>
+        </div>
+        <span className="text-xl font-extrabold text-[#14112E]">
+          {price != null ? `₹${price}` : '—'}
+        </span>
+      </div>
+
+      <button
+        type="button"
+        onClick={handleConfirmRide}
+        className="mt-5 flex h-14 w-full items-center justify-center rounded-2xl bg-[#2B2F77] text-base font-bold text-white shadow-[0_8px_20px_rgba(43,47,119,0.28)] transition hover:bg-[#3a3fa0] active:scale-[0.98]"
+      >
+        Confirm ride
+      </button>
+    </div>
+  )
 }

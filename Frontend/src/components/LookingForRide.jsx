@@ -1,96 +1,225 @@
-import React, { useRef, useEffect } from "react";
-import gsap from "gsap";
+import React, { useRef, useEffect, useState } from 'react'
+import gsap from 'gsap'
+import axios from 'axios'
+import { VEHICLE_IMAGES, VEHICLE_NAMES } from '../../public/vechileImages'
 
 const LookingForRide = (props) => {
-    const panelRef = useRef(null);
+  const panelRef = useRef(null)
+  const [confirming, setConfirming] = useState(false)
+  const [cancelling, setCancelling] = useState(false)
+  const [cancelError, setCancelError] = useState('')
 
-    // Slide the confirm sheet up on mount, same feel as the vehicle panel
-    useEffect(() => {
-        if (!panelRef.current) return;
-        gsap.fromTo(
-            panelRef.current,
-            { y: 40, opacity: 0 },
-            { y: 0, opacity: 1, duration: 0.4, ease: "power3.out" }
-        );
-    }, []);
+  // Close the confirmation with the Escape key
+  useEffect(() => {
+    if (!confirming) return
+    const onKey = (e) => e.key === 'Escape' && !cancelling && setConfirming(false)
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [confirming, cancelling])
 
-    return (
-        <div className="bg-white rounded-t-2xl shadow-[0_-4px_16px_rgba(0,0,0,0.08)] px-5 pt-3 pb-10 max-w-md mx-auto">
+  const handleCancelRide = async () => {
+    setCancelling(true)
+    setCancelError('')
+    try {
+      // TODO: match this to your backend's cancel route
+      if (props.rideId) {
+        await axios.post(
+          `${import.meta.env.VITE_BASE_URL}/rides/cancel`,
+          { rideId: props.rideId },
+          { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+        )
+      }
+      setConfirming(false)
+      props.setVechileFound(false)
+    } catch (error) {
+      setCancelError(
+        error.response?.data?.message || 'Could not cancel the ride. Please try again.'
+      )
+    } finally {
+      setCancelling(false)
+    }
+  }
 
-            {/* Loading */}
-            <div className="mx-auto mb-3 h-0.5 w-full overflow-hidden rounded-full bg-gray-200">
-                <div className="h-full w-xs rounded-full bg-blue-400 animate-loading-line" />
-            </div>
+  const vehicle = props.selectedVehicle
+  const image = VEHICLE_IMAGES[vehicle]
+  const name = VEHICLE_NAMES[vehicle] || 'Ride'
+  const price = props.fare?.[vehicle]
 
-            {/* Confirm sheet */}
-            <h2 className="text-xl font-bold text-gray-900 mb-4">
-                Looking for Ride
-            </h2>
+  // Slide the sheet up on mount, same feel as the other panels
+  useEffect(() => {
+    if (!panelRef.current) return
+    gsap.fromTo(
+      panelRef.current,
+      { y: 40, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.4, ease: 'power3.out' }
+    )
+  }, [])
 
-            <div className="flex justify-center mb-4">
-                <svg width="130" height="70" viewBox="0 0 130 70" fill="none">
-                    <ellipse cx="65" cy="60" rx="45" ry="5" fill="#f3f4f6" />
-                    <path
-                        d="M18 44l6-16a8 8 0 017.4-5h47.2a8 8 0 017.4 5l6 16"
-                        fill="white"
-                        stroke="#111827"
-                        strokeWidth="1.6"
-                    />
-                    <path
-                        d="M14 44h102v6a3 3 0 01-3 3H17a3 3 0 01-3-3v-6z"
-                        fill="#111827"
-                    />
-                    <rect x="30" y="26" width="70" height="14" rx="4" fill="#e5e7eb" />
-                    <circle cx="34" cy="53" r="7" fill="#111827" />
-                    <circle cx="34" cy="53" r="3" fill="white" />
-                    <circle cx="96" cy="53" r="7" fill="#111827" />
-                    <circle cx="96" cy="53" r="3" fill="white" />
-                </svg>
-            </div>
+  return (
+    <div
+      ref={panelRef}
+      className="relative mx-auto w-full max-w-md overflow-hidden rounded-t-[32px] bg-white px-6 pb-8 pt-0 font-sans shadow-[0_-8px_30px_rgba(20,17,46,0.12)]"
+    >
+      <style>{`
+        @keyframes roam-search-bar { 0% { transform: translateX(-100%) } 100% { transform: translateX(350%) } }
+        @keyframes roam-pulse { 0% { transform: scale(0.6); opacity: .5 } 100% { transform: scale(1.5); opacity: 0 } }
+        @media (prefers-reduced-motion: reduce) {
+          .roam-search-bar, .roam-pulse { animation: none !important }
+        }
+      `}</style>
 
-            {/* Pickup */}
-            <div className="flex items-start gap-3 py-3 border-b border-gray-100">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="mt-0.5 shrink-0">
-                    <path
-                        d="M12 21s-7-6.5-7-11a7 7 0 1114 0c0 4.5-7 11-7 11z"
-                        stroke="#111827"
-                        strokeWidth="1.6"
-                    />
-                    <circle cx="12" cy="10" r="2.2" stroke="#111827" strokeWidth="1.6" />
-                </svg>
-                <div>
-                    <p className="font-semibold text-gray-900">
-                        {props.pickup}
-                    </p>
-                </div>
-            </div>
+      {/* Searching bar, runs along the top edge of the sheet */}
+      <div className="-mx-6 h-1 overflow-hidden bg-[#E3E6F2]" role="progressbar" aria-label="Searching for a driver">
+        <div
+          className="roam-search-bar h-full w-1/3 rounded-full bg-[#2B2F77]"
+          style={{ animation: 'roam-search-bar 1.4s ease-in-out infinite' }}
+        />
+      </div>
 
-            {/* Destination */}
-            <div className="flex items-start gap-3 py-3 border-b border-gray-100">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="mt-0.5 shrink-0">
-                    <rect x="5" y="5" width="14" height="14" rx="2" stroke="#111827" strokeWidth="1.6" />
-                    <circle cx="12" cy="12" r="2.2" fill="#111827" />
-                </svg>
-                <div>
-                    <p className="font-semibold text-gray-900">
-                        {props.destination}
-                    </p>
-                </div>
-            </div>
+      <h2 className="mt-5 text-xl font-extrabold tracking-tight text-[#14112E]">
+        Looking for a driver
+      </h2>
+      <p className="mt-1 text-sm font-medium text-[#4B5069]">
+        Hang tight, we're finding a {name.toLowerCase()} near you.
+      </p>
 
-            {/* Payment */}
-            <div className="flex items-start gap-3 py-3 border-b border-gray-100">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="mt-0.5 shrink-0">
-                    <rect x="3" y="6" width="18" height="13" rx="2" stroke="#111827" strokeWidth="1.6" />
-                    <path d="M3 10h18" stroke="#111827" strokeWidth="1.6" />
-                </svg>
-                <div>
-                    <p className="font-semibold text-gray-900">₹{props.fare[props.selectedVehicle]}</p>
-                    <p className="text-sm text-gray-500">Cash</p>
-                </div>
-            </div>
+      {/* Vehicle with pulsing rings */}
+      <div className="relative my-4 flex items-center justify-center rounded-2xl bg-[#F4F5FA] py-5">
+        <span
+          aria-hidden="true"
+          className="roam-pulse absolute h-24 w-24 rounded-full border-2 border-[#2B2F77]/40"
+          style={{ animation: 'roam-pulse 1.8s ease-out infinite' }}
+        />
+        <span
+          aria-hidden="true"
+          className="roam-pulse absolute h-24 w-24 rounded-full border-2 border-[#2B2F77]/40"
+          style={{ animation: 'roam-pulse 1.8s ease-out 0.9s infinite' }}
+        />
+        {image && (
+          <img
+            src={image}
+            alt={name}
+            draggable={false}
+            className="relative h-20 w-36 object-contain"
+          />
+        )}
+      </div>
+
+      {/* Route */}
+      <div className="relative flex flex-col gap-1">
+        <span
+          aria-hidden="true"
+          className="absolute left-[9px] top-8 h-[calc(100%-4rem)] w-0.5 rounded-full bg-[#CBD0E6]"
+        />
+
+        <div className="flex items-start gap-3 py-2.5">
+          <span
+            aria-hidden="true"
+            className="mt-1 h-5 w-5 shrink-0 rounded-full border-[5px] border-[#2B2F77] bg-white"
+          />
+          <div className="min-w-0">
+            <p className="text-xs font-bold uppercase tracking-wide text-[#9AA0BA]">Pick-up</p>
+            <p className="font-semibold leading-snug text-[#14112E]">{props.pickup}</p>
+          </div>
         </div>
-    );
+
+        <div className="flex items-start gap-3 py-2.5">
+          <span aria-hidden="true" className="mt-1 flex h-5 w-5 shrink-0 items-center justify-center">
+            <span className="h-3.5 w-3.5 rounded-[4px] bg-[#C2410C]" />
+          </span>
+          <div className="min-w-0">
+            <p className="text-xs font-bold uppercase tracking-wide text-[#9AA0BA]">Destination</p>
+            <p className="font-semibold leading-snug text-[#14112E]">{props.destination}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Fare */}
+      <div className="mt-2 flex items-center justify-between rounded-2xl border-2 border-[#E3E6F2] px-4 py-3">
+        <div className="flex items-center gap-3">
+          <svg
+            aria-hidden="true"
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#2B2F77"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <rect x="3" y="6" width="18" height="13" rx="2" />
+            <path d="M3 10h18" />
+          </svg>
+          <span className="text-sm font-semibold text-[#4B5069]">Cash</span>
+        </div>
+        <span className="text-xl font-extrabold text-[#14112E]">
+          {price != null ? `₹${price}` : '—'}
+        </span>
+      </div>
+
+      {/* Cancel */}
+      <button
+        type="button"
+        onClick={() => {
+          setCancelError('')
+          setConfirming(true)
+        }}
+        className="mt-5 flex h-14 w-full items-center justify-center rounded-2xl border-2 border-red-200 bg-white text-base font-bold text-red-600 transition hover:bg-red-50 active:scale-[0.98]"
+      >
+        Cancel ride
+      </button>
+
+      {/* Confirmation dialog */}
+      {confirming && (
+        <div
+          className="absolute inset-0 z-20 flex items-end bg-[#14112E]/50"
+          onClick={() => !cancelling && setConfirming(false)}
+        >
+          <div
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="cancel-title"
+            aria-describedby="cancel-desc"
+            onClick={(e) => e.stopPropagation()}
+            className="w-full rounded-t-[28px] bg-white px-6 pb-8 pt-6 shadow-[0_-8px_30px_rgba(20,17,46,0.2)]"
+          >
+            <h3 id="cancel-title" className="text-xl font-extrabold tracking-tight text-[#14112E]">
+              Cancel this ride?
+            </h3>
+            <p id="cancel-desc" className="mt-1.5 text-sm font-medium text-[#4B5069]">
+              We're still looking for a driver. If you cancel, you'll need to
+              book again.
+            </p>
+
+            {cancelError && (
+              <p role="alert" className="mt-3 rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+                {cancelError}
+              </p>
+            )}
+
+            <button
+              type="button"
+              autoFocus
+              onClick={() => setConfirming(false)}
+              disabled={cancelling}
+              className="mt-5 flex h-14 w-full items-center justify-center rounded-2xl bg-[#2B2F77] text-base font-bold text-white shadow-[0_8px_20px_rgba(43,47,119,0.28)] transition hover:bg-[#3a3fa0] active:scale-[0.98] disabled:opacity-60"
+            >
+              Keep searching
+            </button>
+            <button
+              type="button"
+              onClick={handleCancelRide}
+              disabled={cancelling}
+              className="mt-3 flex h-14 w-full items-center justify-center rounded-2xl border-2 border-red-200 bg-white text-base font-bold text-red-600 transition hover:bg-red-50 active:scale-[0.98] disabled:opacity-60"
+            >
+              {cancelling ? 'Cancelling…' : 'Yes, cancel ride'}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  )
 }
 
 export default LookingForRide

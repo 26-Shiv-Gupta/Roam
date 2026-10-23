@@ -267,12 +267,6 @@ const CaptainRegister = () => {
               </Link>
             </p>
           </form>
-
-          <p className="mt-8 text-[11px] leading-relaxed text-[#6B7190]">
-            By proceeding, you consent to get calls, WhatsApp or SMS messages,
-            including by automated means, from Roam and its affiliates to the
-            number provided.
-          </p>
         </div>
       </div>
     </div>
