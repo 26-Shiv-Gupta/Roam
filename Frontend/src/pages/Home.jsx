@@ -165,7 +165,7 @@ export default function Home() {
       {/* Find a trip panel */}
       <div
         ref={panelRef}
-        className="absolute bottom-0 left-0 w-full overflow-hidden rounded-t-[32px] bg-white px-6 pb-6 pt-6 shadow-[0_-8px_30px_rgba(20,17,46,0.12)]"
+        className="absolute bottom-0 left-0 w-full overflow-hidden rounded-t-4xl bg-white px-6 pb-6 pt-6 shadow-[0_-8px_30px_rgba(20,17,46,0.12)]"
       >
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-xl font-extrabold tracking-tight text-[#14112E]">
@@ -199,11 +199,11 @@ export default function Home() {
           {/* Route markers: pick-up dot, line, destination square */}
           <span
             aria-hidden="true"
-            className="absolute left-[18px] top-[22px] h-3 w-3 rounded-full border-[3px] border-[#2B2F77] bg-white"
+            className="absolute left-4.5 top-5.5 h-3 w-3 rounded-full border-[3px] border-[#2B2F77] bg-white"
           />
           <span
             aria-hidden="true"
-            className="absolute left-[23px] top-[38px] h-[50px] w-0.5 rounded-full bg-[#CBD0E6]"
+            className="absolute left-5.75 top-[38px] h-[50px] w-0.5 rounded-full bg-[#CBD0E6]"
           />
           <span
             aria-hidden="true"

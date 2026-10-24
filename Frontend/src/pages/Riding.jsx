@@ -64,7 +64,7 @@ export default function Riding(props) {
 
       {/* Trip sheet */}
       <div ref={panelRef} className="absolute bottom-0 w-full">
-        <div className="mx-auto w-full max-w-md rounded-t-[32px] bg-white px-6 pb-8 pt-6 shadow-[0_-8px_30px_rgba(20,17,46,0.12)]">
+        <div className="mx-auto w-full max-w-md rounded-t-4xl bg-white px-6 pb-8 pt-6 shadow-[0_-8px_30px_rgba(20,17,46,0.12)]">
           <div className="mb-4 flex items-center gap-2">
             <span className="relative flex h-2.5 w-2.5">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-500 opacity-60 motion-reduce:animate-none" />
@@ -102,7 +102,7 @@ export default function Riding(props) {
           {/* Destination */}
           <div className="flex items-start gap-3 py-2.5">
             <span aria-hidden="true" className="mt-1 flex h-5 w-5 shrink-0 items-center justify-center">
-              <span className="h-3.5 w-3.5 rounded-[4px] bg-[#C2410C]" />
+              <span className="h-3.5 w-3.5 rounded-sm bg-[#C2410C]" />
             </span>
             <div className="min-w-0">
               <p className="text-xs font-bold uppercase tracking-wide text-[#9AA0BA]">Destination</p>
