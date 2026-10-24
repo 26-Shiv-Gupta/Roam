@@ -130,7 +130,7 @@ const Start = () => {
           </div>
 
           <Link
-            to="/user-register"
+            to="/user-login"
             className="mt-2 flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-[#2B2F77] text-base font-bold text-white shadow-[0_8px_20px_rgba(43,47,119,0.28)] transition hover:bg-[#3a3fa0] active:scale-[0.98]"
           >
             Get started
@@ -150,9 +150,9 @@ const Start = () => {
           </Link>
 
           <p className="text-center text-sm font-medium text-[#4B5069]">
-            Already have an account?{' '}
+            New here?{' '}
             <Link to="/user-login" className="font-bold text-[#2B2F77] hover:underline">
-              Sign in
+              Create new account
             </Link>
           </p>
         </div>
