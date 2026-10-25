@@ -17,18 +17,17 @@ const LookingForRide = (props) => {
     return () => window.removeEventListener('keydown', onKey)
   }, [confirming, cancelling])
 
+
   const handleCancelRide = async () => {
     setCancelling(true)
     setCancelError('')
     try {
-      // TODO: match this to your backend's cancel route
-      if (props.rideId) {
-        await axios.post(
-          `${import.meta.env.VITE_BASE_URL}/rides/cancel`,
-          { rideId: props.rideId },
-          { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
-        )
-      }
+      const response = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/rides/cancel-ride`,
+        { rideId: props.rideId },
+        { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+      )
+
       setConfirming(false)
       props.setVechileFound(false)
     } catch (error) {

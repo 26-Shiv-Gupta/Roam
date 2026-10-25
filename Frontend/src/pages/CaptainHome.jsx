@@ -72,7 +72,7 @@ const CaptainHome = ({
 
   useEffect(() => {
     socket.emit('join', { userType: 'captain', userId: captain._id })
-  }, [socket, captain._id])
+  }, [socket, captain?._id])
 
   // Send the captain's location every 10s (and stop when leaving the page)
   useEffect(() => {
@@ -92,7 +92,7 @@ const CaptainHome = ({
     updateLocation()
     const id = setInterval(updateLocation, 10000)
     return () => clearInterval(id)
-  }, [socket, captain._id])
+  }, [socket, captain?._id])
 
   // Listen for new rides once, and clean up
   useEffect(() => {
@@ -100,8 +100,14 @@ const CaptainHome = ({
       setRide(data)
       setRidePopUpPanel(true)
     }
+    const onCancelled = () => {
+      navigate('/captain-home')
+    }
     socket.on('new-ride', onNewRide)
-    return () => socket.off('new-ride', onNewRide)
+    return () => {
+      socket.off('new-ride', onNewRide)
+      socket.off('ride-cancelled', onCancelled)
+    }
   }, [socket])
 
   // Popups slide up from the bottom over everything else
@@ -128,6 +134,10 @@ const CaptainHome = ({
       console.error('Could not confirm ride:', error)
     }
   }
+
+  socket.on('cancel-ride', () => {
+    navigate('/captain-home')
+  })
 
   return (
     <div className="relative h-dvh w-full overflow-hidden bg-[#F4F5FA] font-sans">
@@ -214,7 +224,7 @@ const CaptainHome = ({
       <div ref={ConfirmRidePopUpRef} className="absolute bottom-0 h-dvh w-full bg-white">
         <ConfirmRidePopUp
           ride={ride}
-          captainId={captain._id}
+          captainId={captain?._id}
           setConfirmRidePopUpPanel={setConfirmRidePopUpPanel}
         />
       </div>

@@ -12,6 +12,48 @@ import UserRoamLogo from '../components/UserRoamLogo'
 import { SocketContext } from '../context/SocketContext'
 import { UserDataContext } from '../context/UserContext'
 
+// Text input with an "×" button on the right that empties it
+const ClearableInput = React.forwardRef(function ClearableInput(
+  { value, onClear, className = '', clearLabel = 'Clear', ...rest },
+  ref
+) {
+  return (
+    <div className="relative">
+      <input
+        ref={ref}
+        value={value}
+        className={`${className} ${value ? 'pr-12' : 'pr-4'}`}
+        {...rest}
+      />
+      {value && (
+        <button
+          type="button"
+          aria-label={clearLabel}
+          // keep focus in the input while clearing
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={onClear}
+          className="absolute right-1.5 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-xl text-[#4B5069] transition hover:text-[#2B2F77] active:scale-90"
+        >
+          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#CBD0E6]/70">
+            <svg
+              aria-hidden="true"
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="3"
+              strokeLinecap="round"
+            >
+              <path d="M6 6l12 12M18 6L6 18" />
+            </svg>
+          </span>
+        </button>
+      )}
+    </div>
+  )
+})
+
 export default function Home() {
   const [activeField, setActiveField] = useState(null)
   const [pickup, setPickup] = useState('')
@@ -27,8 +69,11 @@ export default function Home() {
   const [selectedVehicle, setSelectedVehicle] = useState(null)
   const [ride, setRide] = useState(null)
   const [finding, setFinding] = useState(false)
+  const [rideId, setRideId] = useState(null)
 
   const panelRef = useRef(null)
+  const pickupInputRef = useRef(null)
+  const destinationInputRef = useRef(null)
   const vehiclePanelRef = useRef(null)
   const confirmRidePanelRef = useRef(null)
   const vechileFoundRef = useRef(null)
@@ -39,27 +84,37 @@ export default function Home() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    socket.emit('join', { userType: 'user', userId: user._id })
+    socket.emit('join', { userType: 'user', userId: user?._id })
   }, [user])
 
   // Register socket listeners once (and clean up), not on every render
   useEffect(() => {
+    const onCreated = (data) => {
+      setRideId(data._id)
+      // console.log(data)
+    }
     const onConfirmed = (data) => {
       setWaitingForDriver(true)
       setVechileFound(false)
       setRide(data)
     }
     const onStarted = (ride) => navigate('/riding', { state: { ride } })
-    const onEnded = () => navigate('/home')
+    const onCancelled = () => {
+      setWaitingForDriver(false)
+      setPanelOpen(false)
+      setConfirmRidePanelOpen(false)
+    }
 
+    socket.on('ride-created', onCreated)
     socket.on('ride-confirmed', onConfirmed)
     socket.on('ride-started', onStarted)
-    socket.on('ride-ended', onEnded)
+    socket.on('ride-cancelled', onCancelled)
 
     return () => {
+      socket.off('ride-created', onCreated)
       socket.off('ride-confirmed', onConfirmed)
       socket.off('ride-started', onStarted)
-      socket.off('ride-ended', onEnded)
+      socket.off('ride-cancelled', onCancelled)
     }
   }, [socket, navigate])
 
@@ -127,6 +182,20 @@ export default function Home() {
     fetchSuggestions(e.target.value, setDestinationSuggestions)
   }
 
+  const clearPickup = () => {
+    setPickup('')
+    setPickupSuggestions([])
+    setActiveField('pickup')
+    pickupInputRef.current?.focus()
+  }
+
+  const clearDestination = () => {
+    setDestination('')
+    setDestinationSuggestions([])
+    setActiveField('destination')
+    destinationInputRef.current?.focus()
+  }
+
   const handleFindRide = async () => {
     if (!pickup || !destination) return
 
@@ -152,7 +221,7 @@ export default function Home() {
   }
 
   const inputClass =
-    'h-14 w-full rounded-2xl border border-transparent bg-[#F4F5FA] pl-11 pr-4 text-[15px] font-medium text-[#14112E] outline-none transition placeholder:text-[#9AA0BA] focus:border-[#2B2F77] focus:bg-white focus:ring-4 focus:ring-[#2B2F77]/15'
+    'h-14 w-full rounded-2xl border border-transparent bg-[#F4F5FA] pl-11 text-[15px] font-medium text-[#14112E] outline-none transition placeholder:text-[#9AA0BA] focus:border-[#2B2F77] focus:bg-white focus:ring-4 focus:ring-[#2B2F77]/15'
 
   return (
     <div className="relative h-dvh w-full overflow-hidden bg-[#F4F5FA] font-sans">
@@ -199,35 +268,47 @@ export default function Home() {
           {/* Route markers: pick-up dot, line, destination square */}
           <span
             aria-hidden="true"
-            className="absolute left-4.5 top-5.5 h-3 w-3 rounded-full border-[3px] border-[#2B2F77] bg-white"
+            className="pointer-events-none absolute z-1 left-4.5 top-5.5 h-3 w-3 rounded-full border-[3px] border-[#2B2F77] bg-white"
           />
           <span
             aria-hidden="true"
-            className="absolute left-5.75 top-[38px] h-[50px] w-0.5 rounded-full bg-[#CBD0E6]"
+            className="pointer-events-none absolute z-1 left-5.75 top-[38px] h-[50px] w-0.5 rounded-full bg-[#CBD0E6]"
           />
           <span
             aria-hidden="true"
-            className="absolute left-[18px] top-[90px] h-3 w-3 rounded-[3px] bg-[#C2410C]"
+            className="pointer-events-none absolute z-1 left-[18px] top-[90px] h-3 w-3 rounded-[3px] bg-[#C2410C]"
           />
 
-          <input
+          <ClearableInput
+            ref={pickupInputRef}
             type="text"
             aria-label="Pick-up location"
+            clearLabel="Clear pick-up location"
             placeholder="Add a pick-up location"
             value={pickup}
             onClick={() => setActiveField('pickup')}
-            onFocus={() => setPanelOpen(true)}
+            onFocus={() => {
+              setActiveField('pickup')
+              setPanelOpen(true)
+            }}
             onChange={handlePickupChange}
+            onClear={clearPickup}
             className={inputClass}
           />
-          <input
+          <ClearableInput
+            ref={destinationInputRef}
             type="text"
             aria-label="Destination"
+            clearLabel="Clear destination"
             placeholder="Enter your destination"
             value={destination}
             onClick={() => setActiveField('destination')}
-            onFocus={() => setPanelOpen(true)}
+            onFocus={() => {
+              setActiveField('destination')
+              setPanelOpen(true)
+            }}
             onChange={handleDestinationChange}
+            onClear={clearDestination}
             className={inputClass}
           />
         </div>
@@ -254,7 +335,7 @@ export default function Home() {
       </div>
 
       {/* Vehicle panel */}
-      <div ref={vehiclePanelRef} className="absolute bottom-0 w-full">
+      <div ref={vehiclePanelRef} className="absolute bottom-0 w-full z-2">
         <VechilePanel
           setVehiclePanelOpen={setVehiclePanelOpen}
           setConfirmRidePanelOpen={setConfirmRidePanelOpen}
@@ -264,7 +345,7 @@ export default function Home() {
       </div>
 
       {/* Confirm ride panel */}
-      <div ref={confirmRidePanelRef} className="absolute bottom-0 w-full">
+      <div ref={confirmRidePanelRef} className="absolute bottom-0 w-full z-2">
         <ConfirmRide
           setConfirmRidePanelOpen={setConfirmRidePanelOpen}
           setVechileFound={setVechileFound}
@@ -276,18 +357,19 @@ export default function Home() {
       </div>
 
       {/* Looking for ride panel */}
-      <div ref={vechileFoundRef} className="absolute bottom-0 w-full">
+      <div ref={vechileFoundRef} className="absolute bottom-0 w-full z-2">
         <LookingForRide
           setVechileFound={setVechileFound}
           pickup={pickup}
           destination={destination}
           selectedVehicle={selectedVehicle}
           fare={fare}
+          rideId={rideId}
         />
       </div>
 
       {/* Waiting for driver panel */}
-      <div ref={waitingForDriverRef} className="absolute bottom-0 w-full">
+      <div ref={waitingForDriverRef} className="absolute bottom-0 w-full z-2">
         <WaitingForDriver ride={ride} setWaitingForDriver={setWaitingForDriver} />
       </div>
     </div>

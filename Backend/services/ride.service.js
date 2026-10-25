@@ -131,3 +131,21 @@ module.exports.finishRide = async(rideId) => {
 
     return ride;
 }
+
+module.exports.cancelRide = async(rideId) => {
+    if(!rideId) {
+        throw new Error('Ride id is required')
+    }
+
+    const ride = await rideModel.findOne({_id: rideId}).populate('user')
+
+    if(!ride) {
+        throw new Error('Ride not found')
+    }
+
+    await rideModel.findOneAndUpdate({_id: rideId}, {
+        status: 'cancelled'
+    })
+
+    return ride;
+}

@@ -51,6 +51,22 @@ export default function ConfirmRidePopUp(props) {
     }
   }
 
+  const handleCancel = async () => {
+    props.setConfirmRidePopUpPanel(false);
+
+    const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/rides/cancel-ride`, {
+      rideId: props.ride?._id
+    }, {
+      headers: {    
+        Authorization: `Bearer ${localStorage.getItem('token')}`
+      }
+    })
+
+    if (response.status === 200) {
+      navigate('/captain-home')
+    }
+  }
+
   return (
     <div className="mx-auto flex h-full w-full max-w-md flex-col overflow-hidden bg-white font-sans">
       <div ref={panelRef} className="flex min-h-0 flex-1 flex-col overflow-y-auto px-6 pb-8 pt-4">
@@ -150,9 +166,8 @@ export default function ConfirmRidePopUp(props) {
               setError('')
             }}
             aria-invalid={!!error}
-            className={`h-14 w-full rounded-2xl border bg-[#F4F5FA] px-4 text-center text-xl font-extrabold tracking-[0.4em] text-[#14112E] outline-none transition placeholder:text-[#9AA0BA] focus:bg-white focus:ring-4 focus:ring-[#2B2F77]/15 ${
-              error ? 'border-red-500' : 'border-transparent focus:border-[#2B2F77]'
-            }`}
+            className={`h-14 w-full rounded-2xl border bg-[#F4F5FA] px-4 text-center text-xl font-extrabold tracking-[0.4em] text-[#14112E] outline-none transition placeholder:text-[#9AA0BA] focus:bg-white focus:ring-4 focus:ring-[#2B2F77]/15 ${error ? 'border-red-500' : 'border-transparent focus:border-[#2B2F77]'
+              }`}
           />
 
           {error && (
@@ -170,7 +185,7 @@ export default function ConfirmRidePopUp(props) {
           </button>
           <button
             type="button"
-            onClick={() => props.setConfirmRidePopUpPanel(false)}
+            onClick={handleCancel}
             className="mt-3 flex h-14 w-full items-center justify-center rounded-2xl border-2 border-red-200 bg-white text-base font-bold text-red-600 transition hover:bg-red-50 active:scale-[0.98]"
           >
             Cancel

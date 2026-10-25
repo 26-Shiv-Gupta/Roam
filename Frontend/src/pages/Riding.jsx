@@ -1,9 +1,10 @@
-import React, { useRef, useEffect } from 'react'
+import React, { useRef, useEffect, useContext } from 'react'
 import gsap from 'gsap'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import LiveLocationMap from '../components/LiveLocationMap'
 import UserRoamLogo from '../components/UserRoamLogo'
 import { VEHICLE_IMAGES, VEHICLE_NAMES } from '../../public/vechileImages'
+import { SocketContext } from '../context/SocketContext'
 
 // Captains register "moto", while rides use "motorcycle"
 const normalizeType = (t) => (t === 'moto' ? 'motorcycle' : t)
@@ -22,6 +23,9 @@ export default function Riding(props) {
   const image = VEHICLE_IMAGES[type]
   const typeName = VEHICLE_NAMES[type] || captain?.vechile?.vechileType
 
+  const { socket } = useContext(SocketContext);
+  const navigate = useNavigate();
+
   useEffect(() => {
     if (!panelRef.current) return
     gsap.fromTo(
@@ -31,15 +35,23 @@ export default function Riding(props) {
     )
   }, [])
 
+  useEffect(() => {
+    const onEnded = () => navigate('/home');
+
+    socket.on('ride-ended', onEnded);
+
+    return () => {
+      socket.off('ride-ended', onEnded);
+    };
+  }, [navigate]);
+
   return (
     <div className="relative h-dvh w-full overflow-hidden bg-[#F4F5FA] font-sans">
       {/* Map */}
       <LiveLocationMap />
 
       {/* Logo chip */}
-      <div className="absolute left-4 top-4 z-10 rounded-2xl bg-white px-3 py-2 shadow-[0_6px_20px_rgba(20,17,46,0.15)]">
-        <UserRoamLogo />
-      </div>
+      <UserRoamLogo />
 
       {/* Home */}
       <Link

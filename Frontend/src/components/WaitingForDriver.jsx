@@ -1,5 +1,6 @@
-import React, { useRef, useEffect } from 'react'
+import React, { useRef, useEffect, useState } from 'react'
 import gsap from 'gsap'
+import axios from 'axios'
 import { VEHICLE_IMAGES, VEHICLE_NAMES } from '../../public/vechileImages'
 
 // Captains register "moto", while rides use "motorcycle"
@@ -7,6 +8,40 @@ const normalizeType = (t) => (t === 'moto' ? 'motorcycle' : t)
 
 export default function WaitingForDriver(props) {
   const panelRef = useRef(null)
+  const [confirming, setConfirming] = useState(false)
+  const [cancelling, setCancelling] = useState(false)
+  const [cancelError, setCancelError] = useState('')
+
+  // Close the confirmation with the Escape key
+  useEffect(() => {
+    if (!confirming) return
+    const onKey = (e) => e.key === 'Escape' && !cancelling && setConfirming(false)
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [confirming, cancelling])
+
+  const handleCancelRide = async () => {
+    setCancelling(true)
+    setCancelError('')
+    try {
+      // TODO: match this to your backend's cancel route
+      if (props.ride?._id) {
+        await axios.post(
+          `${import.meta.env.VITE_BASE_URL}/rides/cancel-ride`,
+          { rideId: props.ride._id },
+          { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+        )
+      }
+      setConfirming(false)
+      props.setWaitingForDriver(false)
+    } catch (error) {
+      setCancelError(
+        error.response?.data?.message || 'Could not cancel the ride. Please try again.'
+      )
+    } finally {
+      setCancelling(false)
+    }
+  }
 
   const captain = props.ride?.captain
   const first = captain?.fullname?.firstname || ''
@@ -31,7 +66,7 @@ export default function WaitingForDriver(props) {
     <div className="mx-auto w-full max-w-md">
       <div
         ref={panelRef}
-        className="w-full rounded-t-[32px] bg-white px-6 pb-8 pt-2 font-sans shadow-[0_-8px_30px_rgba(20,17,46,0.12)]"
+        className="relative w-full overflow-hidden rounded-t-[32px] bg-white px-6 pb-8 pt-2 font-sans shadow-[0_-8px_30px_rgba(20,17,46,0.12)]"
       >
         {/* Handle (tap to close) */}
         <button
@@ -143,6 +178,67 @@ export default function WaitingForDriver(props) {
             {props.ride?.fare != null ? `₹${props.ride.fare}` : '—'}
           </span>
         </div>
+
+        {/* Cancel */}
+        <button
+          type="button"
+          onClick={() => {
+            setCancelError('')
+            setConfirming(true)
+          }}
+          className="mt-5 flex h-14 w-full items-center justify-center rounded-2xl border-2 border-red-200 bg-white text-base font-bold text-red-600 transition hover:bg-red-50 active:scale-[0.98]"
+        >
+          Cancel ride
+        </button>
+
+        {/* Confirmation dialog */}
+        {confirming && (
+          <div
+            className="absolute inset-0 z-20 flex items-end bg-[#14112E]/50"
+            onClick={() => !cancelling && setConfirming(false)}
+          >
+            <div
+              role="alertdialog"
+              aria-modal="true"
+              aria-labelledby="cancel-title"
+              aria-describedby="cancel-desc"
+              onClick={(e) => e.stopPropagation()}
+              className="w-full rounded-t-[28px] bg-white px-6 pb-8 pt-6 shadow-[0_-8px_30px_rgba(20,17,46,0.2)]"
+            >
+              <h3 id="cancel-title" className="text-xl font-extrabold tracking-tight text-[#14112E]">
+                Cancel this ride?
+              </h3>
+              <p id="cancel-desc" className="mt-1.5 text-sm font-medium text-[#4B5069]">
+                {driverName} is already on the way. If you cancel, you'll need to
+                book again.
+              </p>
+
+              {cancelError && (
+                <p role="alert" className="mt-3 rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+                  {cancelError}
+                </p>
+              )}
+
+              <button
+                type="button"
+                autoFocus
+                onClick={() => setConfirming(false)}
+                disabled={cancelling}
+                className="mt-5 flex h-14 w-full items-center justify-center rounded-2xl bg-[#2B2F77] text-base font-bold text-white shadow-[0_8px_20px_rgba(43,47,119,0.28)] transition hover:bg-[#3a3fa0] active:scale-[0.98] disabled:opacity-60"
+              >
+                Keep my ride
+              </button>
+              <button
+                type="button"
+                onClick={handleCancelRide}
+                disabled={cancelling}
+                className="mt-3 flex h-14 w-full items-center justify-center rounded-2xl border-2 border-red-200 bg-white text-base font-bold text-red-600 transition hover:bg-red-50 active:scale-[0.98] disabled:opacity-60"
+              >
+                {cancelling ? 'Cancelling…' : 'Yes, cancel ride'}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
