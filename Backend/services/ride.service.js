@@ -68,18 +68,22 @@ module.exports.confirmRide = async (rideId, captainId) => {
         throw new Error('RideId and CaptainId is required !!')
     }
 
+    const ride = await rideModel.findOne({
+        _id: rideId
+    }).populate('user').populate('captain').select('+otp')
+    
+    if (!ride) {
+        throw new Error('Ride not found');
+    }
+
+    if(ride.status !== 'pending') {
+        throw new Error('No pending ride')
+    }
+
     await rideModel.findOneAndUpdate({_id: rideId}, {
         status: 'accepted',
         captain: captainId
     })
-
-    const ride = await rideModel.findOne({
-        _id: rideId
-    }).populate('user').populate('captain').select('+otp')
-
-    if (!ride) {
-        throw new Error('Ride not found');
-    }
 
     return ride;
 }
