@@ -56,7 +56,7 @@ const stats = [
 
 const CaptainHome = ({
   captainName = 'Harsh Patel',
-  captainAvatar = 'https://images.unsplash.com/photo-1633332755192-727a05c4013d?auto=format&fit=crop&w=200&q=80',
+  captainAvatar = 'j',
   earnings = '295.20',
 }) => {
   const [RidePopUpPanel, setRidePopUpPanel] = useState(false)
@@ -172,16 +172,16 @@ const CaptainHome = ({
       </button>
 
       {/* Captain summary sheet */}
-      <div className="absolute bottom-0 left-0 w-full rounded-t-[32px] bg-white px-6 pb-7 pt-6 shadow-[0_-8px_30px_rgba(20,17,46,0.12)]">
+      <div className="absolute bottom-0 left-0 w-full rounded-t-4xl bg-white px-6 pb-7 pt-6 shadow-[0_-8px_30px_rgba(20,17,46,0.12)]">
         <div className="flex items-center justify-between">
           <div className="flex min-w-0 items-center gap-3">
             <img
-              src={captainAvatar}
-              alt={captainName}
+              src='https://images.unsplash.com/photo-1633332755192-727a05c4013d?auto=format&fit=crop&w=200&q=80'
+              alt='Profile image'
               className="h-12 w-12 shrink-0 rounded-full border-2 border-white object-cover shadow-[0_0_0_2px_#16a34a]"
             />
             <div className="min-w-0">
-              <p className="truncate text-base font-extrabold text-[#14112E]">{captainName}</p>
+              <p className="truncate text-base font-extrabold text-[#14112E]">{captain.fullname.firstname + " " + captain.fullname.lastname}</p>
               <p className="flex items-center gap-1.5 text-xs font-semibold text-green-700">
                 <span className="h-2 w-2 rounded-full bg-green-600" />
                 Online
